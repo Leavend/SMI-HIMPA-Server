@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Message</title>
+    <meta name="description" content="WhatsApp message template for notifications and updates.">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .container {
+            background: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .header .icon {
+            font-size: 20px;
+            margin-right: 8px;
+        }
+        .message {
+            font-size: 16px;
+            margin: 15px 0;
+        }
+        .details {
+            font-size: 14px;
+            background: #f1f1f1;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .details p {
+            margin: 5px 0;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+            text-align: center;
+        }
+        .footer .icon {
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="icon">👋</span>
+            Hello, #NAME#
+        </div>
+        <div class="message">
+            📢 <strong>#SUBJECT#</strong>
+            <p>#MESSAGE#</p>
+        </div>
+        <div class="details">
+            <p>💌 <strong>Email:</strong> #EMAIL#</p>
+            <p>📞 <strong>Phone:</strong> #PHONE#</p>
+            <p>📅 <strong>Date:</strong> #DATE#</p>            
+        </div>
+        <div class="footer">
+            <p>🌟 Thank you for choosing <strong>#APP_NAME#</strong>!</p>
+            <p>For support, contact us: <span class="icon">📞</span> #SUPPORT_CONTACT#</p>
+        </div>
+    </div>
+</body>
+</html>
