@@ -21,7 +21,7 @@ tsconfig.json
 # OS generated files
 .DS_Store
 Thumbs.db
-
+s
 # IDE specific files
 .vscode/
 .idea/
