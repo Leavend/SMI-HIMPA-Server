@@ -3,10 +3,11 @@ node_modules
 
 # Build files
 .wwebjs_auth
-.wwerbjs_cache
+.wwebjs_cache
 
 # Environment variables
 .env.local
+
 
 # Build output
 dist
