@@ -10,7 +10,7 @@ import BorrowDataSource from "../datasource/borrow-datasource";
 @autoInjectable()
 class BorrowService {
   constructor(
-    @inject(BorrowDataSource) private borrowDataSource: BorrowDataSource
+    @inject(BorrowDataSource) private borrowDataSource: BorrowDataSource,
   ) {}
 
   // Start a transaction
@@ -37,7 +37,7 @@ class BorrowService {
   // Create a new borrow record
   async createBorrow(
     record: IBorrowCreationBody,
-    transaction?: any
+    transaction?: any,
   ): Promise<IBorrow> {
     return this.borrowDataSource.create(record);
   }
@@ -45,7 +45,7 @@ class BorrowService {
   // Update a single borrow record
   async updateBorrowRecord(
     searchBy: Partial<IBorrow>,
-    record: Partial<IBorrow>
+    record: Partial<IBorrow>,
   ): Promise<void> {
     const query = { where: { ...searchBy } } as IFindBorrowQuery;
     await this.borrowDataSource.updateOne(query, record);

@@ -48,7 +48,9 @@ class UserController {
 
       // Validate uniqueness of email and number separately
       const existingEmail = await this.userService.getUserByField({ email });
-      const existingNumber = await this.userService.getUserByField({ number: formattedNumber });
+      const existingNumber = await this.userService.getUserByField({
+        number: formattedNumber,
+      });
 
       const existingUser = existingEmail || existingNumber;
 
@@ -423,7 +425,6 @@ class UserController {
       );
     }
   }
-
 }
 
 export default UserController;

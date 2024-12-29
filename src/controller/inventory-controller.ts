@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import { autoInjectable } from "tsyringe";
-import { IInventoryCreationBody, IFindInventoryQuery } from "../interface/inventory-interface";
+import {
+  IInventoryCreationBody,
+  IFindInventoryQuery,
+} from "../interface/inventory-interface";
 import InventoryService from "../service/inventory-service";
 import Utility from "../utils/index.utils";
 import { ResponseCode } from "../interface/enum/code-enum";
@@ -29,7 +32,8 @@ class InventoryController {
         );
       }
 
-      const inventory = await this.inventoryService.createInventory(newInventory);
+      const inventory =
+        await this.inventoryService.createInventory(newInventory);
       return Utility.handleSuccess(
         res,
         "Inventory item created successfully",
@@ -87,7 +91,8 @@ class InventoryController {
   async fetchInventory(req: Request, res: Response) {
     try {
       const query = req.query as unknown as IFindInventoryQuery;
-      const inventory = await this.inventoryService.getAllInventoriesWithQuery(query);
+      const inventory =
+        await this.inventoryService.getAllInventoriesWithQuery(query);
       if (!inventory) {
         return Utility.handleError(
           res,
@@ -202,7 +207,6 @@ class InventoryController {
       );
     }
   }
-
 }
 
 export default InventoryController;

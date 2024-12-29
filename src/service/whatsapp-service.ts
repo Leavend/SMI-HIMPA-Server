@@ -3,6 +3,7 @@ import path from "path";
 import { whatsappClient } from "../../index";
 import Utility from "../utils/index.utils";
 import { htmlToText } from "html-to-text";
+import moment from "moment"; // Pastikan Anda memiliki moment.js sebagai dependency
 
 const whatsappTemplateCommon = path.join(
   __dirname,
@@ -44,6 +45,11 @@ class WhatsAppService {
     }
   }
 
+  private static formatDate(date: string | Date): string {
+    // Mengubah format tanggal menjadi DD MMMM YYYY
+    return moment(date).format("DD MMMM YYYY");
+  }
+
   static async sendBorrowMessageToUser(
     user: any,
     to: string,
@@ -60,11 +66,44 @@ class WhatsAppService {
         "You have successfully borrowed an item from our warehouse. Please wait for admin confirmation.",
       ITEM: itemName || "item",
       PHONE: to.replace(/@c\.us$/, ""),
-      DATE: dateBorrow || new Date().toLocaleDateString(),
-      DUE: dueDate,
+      DATE: this.formatDate(dateBorrow),
+      DUE: this.formatDate(dueDate),
     };
 
     const htmlMessage = this.replacePlaceholders(templateBorrow, placeholders);
+    const textMessage = htmlToText(htmlMessage, { wordwrap: 150 });
+
+    await this.sendMessageInternal(to, textMessage);
+  }
+
+  static async sendConfirmationBorrowMessageToUser(
+    user: any,
+    to: string,
+    itemName: string,
+    dateBorrow: string,
+    dueDate: string,
+    status: string,
+  ) {
+    const placeholders = {
+      APP_NAME: process.env.APPNAME || "YourApp",
+      SUPPORT_CONTACT: process.env.SUPPORTMAIL || "support@example.com",
+      NAME: user || "user",
+      ITEM: itemName || "item",
+      PHONE: to.replace(/@c\.us$/, ""),
+      DATE: this.formatDate(dateBorrow),
+      DUE: this.formatDate(dueDate),
+      STATUS: status.toUpperCase(),
+    };
+
+    let message = "";
+
+    if (status === "ACTIVE") {
+      message = `Your borrowing request for the item *${itemName}* has been *approved* by the admin. Please return it by the due date: ${placeholders.DUE}.`;
+    } else if (status === "REJECTED") {
+      message = `We regret to inform you that your borrowing request for the item *${itemName}* has been *rejected* by the admin.`;
+    }
+
+    const htmlMessage = this.replacePlaceholders(message, placeholders);
     const textMessage = htmlToText(htmlMessage, { wordwrap: 150 });
 
     await this.sendMessageInternal(to, textMessage);
@@ -83,11 +122,11 @@ class WhatsAppService {
       SUPPORT_CONTACT: process.env.SUPPORTMAIL || "support@example.com",
       NAME: admin || "user",
       SUBJECT: "Borrow Confirmation",
-      MESSAGE: `You have an incoming borrow request from a *${user}*. Please confirm the request.`,
+      MESSAGE: `You have an incoming borrow request from *${user}*. Please confirm the request.`,
       ITEM: itemName || "item",
       PHONE: to.replace(/@c\.us$/, ""),
-      DATE: dateBorrow || new Date().toLocaleDateString(),
-      DUE: dueDate,
+      DATE: this.formatDate(dateBorrow),
+      DUE: this.formatDate(dueDate),
     };
 
     const htmlMessage = this.replacePlaceholders(templateBorrow, placeholders);

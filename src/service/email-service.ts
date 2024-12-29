@@ -29,7 +29,12 @@ class EmailService {
   }
 
   private static validateEnvVariables(): void {
-    const requiredEnvVars = ["MAIL_USER", "MAIL_PASS", "APPNAME", "SUPPORTMAIL"];
+    const requiredEnvVars = [
+      "MAIL_USER",
+      "MAIL_PASS",
+      "APPNAME",
+      "SUPPORTMAIL",
+    ];
     for (const varName of requiredEnvVars) {
       if (!process.env[varName]) {
         throw new Error(`Missing required environment variable: ${varName}`);

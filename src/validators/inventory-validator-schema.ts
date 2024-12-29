@@ -16,7 +16,7 @@ const conditionValidation = yup
   .string()
   .oneOf(
     ["Available", "Out of Stock", "Reserved", "Damaged", "Discontinued"],
-    "Condition must be either 'Available', 'Out of Stock', 'Reserved', 'Damaged', or 'Discontinued'"
+    "Condition must be either 'Available', 'Out of Stock', 'Reserved', 'Damaged', or 'Discontinued'",
   );
 
 const codeValidation = yup

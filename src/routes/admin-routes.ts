@@ -74,8 +74,8 @@ const createAdminRoute = () => {
     await borrowController.deleteBorrow(req, res);
   });
 
-  router.post(
-    "/borrow/approve-decline-borrow",
+  router.put(
+    "/borrow/confirmation-borrow",
     AdminAuth(),
     validator(BorrowValidationSchema.approveDeclineBorrowSchema),
     async (req: Request, res: Response) => {

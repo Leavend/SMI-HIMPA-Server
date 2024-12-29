@@ -13,11 +13,13 @@ const createBorrowRoute = (router: Router = express.Router()): Router => {
     "/",
     Auth(),
     validator(ValidationSchema.createBorrowSchema),
-    (req: Request, res: Response) => borrowController.createBorrow(req, res)
+    (req: Request, res: Response) => borrowController.createBorrow(req, res),
   );
 
   // Fetch a single Borrow by ID
-  router.get("/:id", (req: Request, res: Response) => borrowController.getBorrowById(req, res));
+  router.get("/:id", (req: Request, res: Response) =>
+    borrowController.getBorrowById(req, res),
+  );
 
   return router;
 };

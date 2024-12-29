@@ -89,7 +89,9 @@ class ReturnController {
   async getReturnById(req: Request, res: Response) {
     try {
       const { returnId } = req.params;
-      const returnRecord = await this.returnService.getReturnByField({ returnId });
+      const returnRecord = await this.returnService.getReturnByField({
+        returnId,
+      });
       if (!returnRecord) {
         return Utility.handleError(
           res,
@@ -116,7 +118,9 @@ class ReturnController {
   async updateReturn(req: Request, res: Response) {
     try {
       const { returnId, quantity, dateReturn, fineAmount, lateDays } = req.body;
-      const returnExists = await this.returnService.getReturnByField({ returnId });
+      const returnExists = await this.returnService.getReturnByField({
+        returnId,
+      });
       if (!returnExists) {
         return Utility.handleError(
           res,
@@ -146,7 +150,9 @@ class ReturnController {
   async deleteReturn(req: Request, res: Response) {
     try {
       const { returnId } = req.params;
-      const returnExists = await this.returnService.getReturnByField({ returnId });
+      const returnExists = await this.returnService.getReturnByField({
+        returnId,
+      });
       if (!returnExists) {
         return Utility.handleError(
           res,
@@ -170,7 +176,6 @@ class ReturnController {
       );
     }
   }
-  
 }
 
 export default ReturnController;

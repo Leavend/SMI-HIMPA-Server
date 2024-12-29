@@ -7,7 +7,6 @@ import {
 import BorrowModel from "../model/borrow-model";
 
 class BorrowDataSource implements IBorrowDataSource {
-
   // Buat borrow record baru
   async create(record: IBorrowCreationBody): Promise<IBorrow> {
     return await BorrowModel.create(record);

@@ -25,7 +25,10 @@ export const validator = (schema: Schema<any>) => {
   };
 };
 
-const authenticateToken = async (req: Request, res: Response): Promise<IUser | null> => {
+const authenticateToken = async (
+  req: Request,
+  res: Response,
+): Promise<IUser | null> => {
   let token: string = req.headers.authorization ?? "";
   if (Utility.isEmpty(token)) {
     throw new TypeError("Authorization failed");

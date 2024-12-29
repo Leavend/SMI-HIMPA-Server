@@ -19,7 +19,11 @@ class InventoryService {
   async getInventoryByField(
     record: Partial<IInventory>,
   ): Promise<IInventory | null> {
-    const query: IFindInventoryQuery = { where: { ...record }, raw: true, returning: false };
+    const query: IFindInventoryQuery = {
+      where: { ...record },
+      raw: true,
+      returning: false,
+    };
     return this.inventoryDataSource.fetchOne(query);
   }
 
@@ -42,12 +46,18 @@ class InventoryService {
     record: Partial<IInventory>,
     transaction?: any,
   ): Promise<void> {
-    const query: IFindInventoryQuery = { where: { ...searchBy }, returning: false };
+    const query: IFindInventoryQuery = {
+      where: { ...searchBy },
+      returning: false,
+    };
     await this.inventoryDataSource.updateOne(query, record);
   }
 
   async deleteInventory(searchBy: Partial<IInventory>): Promise<void> {
-    const query: IFindInventoryQuery = { where: { ...searchBy }, returning: false };
+    const query: IFindInventoryQuery = {
+      where: { ...searchBy },
+      returning: false,
+    };
     await this.inventoryDataSource.deleteOne(query);
   }
 }

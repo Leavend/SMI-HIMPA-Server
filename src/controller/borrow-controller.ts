@@ -353,7 +353,7 @@ class BorrowController {
       const { borrowId, status } = req.body;
       const admin = req.body.user;
 
-      // Validate user permissions
+      // 1. Validate user permissions
       const permission = Permissions.can(admin.role).updateAny("borrows");
       if (!permission.granted) {
         return Utility.handleError(
@@ -363,7 +363,7 @@ class BorrowController {
         );
       }
 
-      // Validate borrow record and borrow detail
+      // 2. Validate borrow record and borrow detail
       const [borrow, borrowDetail] = await Promise.all([
         this.borrowService.getBorrowByField({ borrowId }),
         this.borrowDetailService.getBorrowDetailByField({ borrowId }),
@@ -377,7 +377,7 @@ class BorrowController {
         );
       }
 
-      // Validate current status
+      // 3. Validate current status
       if (borrowDetail.status !== BorrowStatus.PENDING) {
         return Utility.handleError(
           res,
@@ -386,20 +386,81 @@ class BorrowController {
         );
       }
 
-      // Validate and update status to Active
-      if (status !== BorrowStatus.ACTIVE) {
+      // 4. Validate and update status
+      if (![BorrowStatus.ACTIVE, BorrowStatus.REJECTED].includes(status)) {
         return Utility.handleError(
           res,
-          "Invalid status update. Only 'Active' is allowed.",
+          "Invalid status update. Only 'Active' or 'Rejected' are allowed.",
           ResponseCode.BAD_REQUEST,
         );
       }
 
-      await this.borrowDetailService.updateBorrowDetailRecord(
-        { borrowId },
-        { status: BorrowStatus.ACTIVE },
-      );
+      if (status === BorrowStatus.ACTIVE) {
+        // Update the borrow status to ACTIVE
+        await this.borrowDetailService.updateBorrowDetailRecord(
+          { borrowId },
+          { status: BorrowStatus.ACTIVE },
+        );
 
+        // Additional logic for ACTIVE status can be added here
+      } else if (status === BorrowStatus.REJECTED) {
+        // Update the borrow status to REJECTED
+        await this.borrowDetailService.updateBorrowDetailRecord(
+          { borrowId },
+          { status: BorrowStatus.REJECTED },
+        );
+      }
+
+      // 5. Send WhatsApp notification
+      try {
+        // Extract user information from the borrow record
+        const user = await this.userService.getUserByField({
+          userId: borrow.userId,
+        });
+        const item = await this.inventoryService.getInventoryByField({
+          inventoryId: borrowDetail.inventoryId,
+        });
+
+        if (!user || !item) {
+          console.warn(
+            "User or item details not found. Skipping WhatsApp notification.",
+          );
+        } else {
+          // Prepare notification details
+          const notificationData = {
+            username: user.username,
+            number: user.number,
+            itemName: item.name,
+            dateBorrow: borrow.dateBorrow,
+            dateReturn: borrow.dateReturn,
+            status,
+          };
+
+          // Send WhatsApp notification
+          await WhatsAppService.sendConfirmationBorrowMessageToUser(
+            notificationData.username,
+            notificationData.number,
+            notificationData.itemName,
+            notificationData.dateBorrow.toISOString(),
+            notificationData.dateReturn
+              ? notificationData.dateReturn.toISOString()
+              : "",
+            notificationData.status,
+          );
+
+          console.log(
+            "WhatsApp notification sent successfully to user:",
+            notificationData.number,
+          );
+        }
+      } catch (whatsAppError) {
+        console.error(
+          "Failed to send WhatsApp notification to user:",
+          whatsAppError,
+        );
+      }
+
+      // 6. Return success response
       return Utility.handleSuccess(
         res,
         "Borrow status successfully updated to Active.",
@@ -415,7 +476,6 @@ class BorrowController {
       );
     }
   }
-
 }
 
 export default BorrowController;

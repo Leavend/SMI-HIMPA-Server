@@ -6,11 +6,15 @@ const positiveInteger = yup
   .positive("Quantity must be a positive number")
   .integer("Quantity must be an integer");
 
-const requiredString = (field: string) => yup.string().trim().required(`${field} is required`);
+const requiredString = (field: string) =>
+  yup.string().trim().required(`${field} is required`);
 
 const statusValidation = yup
   .string()
-  .oneOf(["pending", "approved", "returned"], "Status must be either 'pending', 'approved', or 'returned'");
+  .oneOf(
+    ["pending", "approved", "returned"],
+    "Status must be either 'pending', 'approved', or 'returned'",
+  );
 
 // Skema validasi untuk membuat peminjaman
 const createBorrowSchema = yup.object({
@@ -48,10 +52,12 @@ const searchBorrowSchema = yup.object({
 // Skema validasi untuk accept or reject peminjaman
 const approveDeclineBorrowSchema = yup.object({
   borrowId: requiredString("Borrow ID"),
-  adminId: requiredString("Admin ID"),
   status: yup
     .string()
-    .oneOf(["approved", "rejected"], "Status must be either 'approved' or 'rejected'")
+    .oneOf(
+      ["ACTIVE", "REJECTED"],
+      "Status must be either 'active' or 'rejected'",
+    )
     .required("Status is required"),
 });
 

@@ -30,8 +30,8 @@ const logger = createLogger({
       format: format.combine(
         format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
         format.printf(
-          (info) => `${info.timestamp} ${info.level} : ${info.message}`
-        )
+          (info) => `${info.timestamp} ${info.level} : ${info.message}`,
+        ),
       ),
     }),
   ],
@@ -57,7 +57,7 @@ const isEmpty = (data: any): boolean => {
 const handleError = (
   res: Response,
   message: string,
-  statusCode: number = 400
+  statusCode: number = 400,
 ): Response => {
   logger.error(message);
   return res.status(statusCode).json({ status: false, message });
@@ -68,7 +68,7 @@ const handleSuccess = (
   res: Response,
   message: string,
   data: object = {},
-  statusCode: number = 200
+  statusCode: number = 200,
 ): Response => {
   return res.status(statusCode).json({ status: true, message, data });
 };

@@ -13,10 +13,26 @@ const handleRequest = (method: keyof UserController) => {
 };
 
 const createUserRoute = () => {
-  router.post("/register", validator(ValidationSchema.registerSchema), handleRequest("register"));
-  router.post("/login", validator(ValidationSchema.loginSchema), handleRequest("login"));
-  router.post("/forgot-password", validator(ValidationSchema.forgotPasswordSchema), handleRequest("forgotPassword"));
-  router.post("/reset-password", validator(ValidationSchema.resetPasswordSchema), handleRequest("resetPassword"));
+  router.post(
+    "/register",
+    validator(ValidationSchema.registerSchema),
+    handleRequest("register"),
+  );
+  router.post(
+    "/login",
+    validator(ValidationSchema.loginSchema),
+    handleRequest("login"),
+  );
+  router.post(
+    "/forgot-password",
+    validator(ValidationSchema.forgotPasswordSchema),
+    handleRequest("forgotPassword"),
+  );
+  router.post(
+    "/reset-password",
+    validator(ValidationSchema.resetPasswordSchema),
+    handleRequest("resetPassword"),
+  );
 
   return router;
 };

@@ -15,7 +15,10 @@ class BorrowDetailService {
     record: Partial<IBorrowDetail>,
   ): Promise<IBorrowDetail | null> {
     try {
-      const query = { where: { ...record }, raw: true } as IFindBorrowDetailQuery;
+      const query = {
+        where: { ...record },
+        raw: true,
+      } as IFindBorrowDetailQuery;
       return await this.borrowDetailDataSource.fetchOne(query);
     } catch (error) {
       console.error("Error fetching borrow detail by field:", error);
