@@ -24,6 +24,13 @@ class BorrowService {
     return this.borrowDataSource.fetchOne(query);
   }
 
+  // Get borrow records
+  async getBorrowsByFields(record: Partial<IBorrow>): Promise<IBorrow[]> {
+    const query = { where: { ...record }, raw: true } as IFindBorrowQuery;
+    const result = await this.borrowDataSource.fetchAll(query);
+    return result || [];
+  }
+
   // Get all borrow records
   async getAllBorrows(): Promise<IBorrow[] | null> {
     const query = {

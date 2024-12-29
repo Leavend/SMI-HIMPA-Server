@@ -1,24 +1,30 @@
-import express, { Request, Response, Router } from "express";
+import express, { Request, Response } from "express";
 import BorrowController from "../controller/borrow-controller";
 import { Auth, validator } from "../middlewares/index.middleware";
 import ValidationSchema from "../validators/borrow-validator-schema";
 import { container } from "tsyringe";
 
-const createBorrowRoute = (router: Router = express.Router()): Router => {
-  // Inject the BorrowController dependency using tsyringe DI container
-  const borrowController = container.resolve(BorrowController);
+const router = express.Router();
+const borrowController = container.resolve(BorrowController);
 
-  // Create Borrow route
+const asyncHandler = (fn: Function) => (req: Request, res: Response) => {
+  Promise.resolve(fn(req, res)).catch((err) =>
+    res.status(500).send(err.message),
+  );
+};
+
+const createBorrowRoute = () => {
   router.post(
     "/",
     Auth(),
     validator(ValidationSchema.createBorrowSchema),
-    (req: Request, res: Response) => borrowController.createBorrow(req, res),
+    asyncHandler(borrowController.createBorrow.bind(borrowController)),
   );
 
-  // Fetch a single Borrow by ID
-  router.get("/:id", (req: Request, res: Response) =>
-    borrowController.getBorrowById(req, res),
+  router.get(
+    "/borrows/:id",
+    Auth(),
+    asyncHandler(borrowController.getBorrowsByUser.bind(borrowController)),
   );
 
   return router;

@@ -180,69 +180,52 @@ class BorrowController {
     }
   }
 
-  // Fetch a specific borrow record by ID
-  async getBorrowById(req: Request, res: Response) {
-    try {
-      const { id: borrowId } = req.params;
-      if (!borrowId) {
-        return Utility.handleError(
-          res,
-          "Borrow ID is required",
-          ResponseCode.BAD_REQUEST,
-        );
-      }
+  // // Fetch a specific borrow record by field
+  // async getBorrow(req: Request, res: Response) {
+  //   try {
+  //     const { id: borrowId } = req.params;
+  //     if (!borrowId) {
+  //       return Utility.handleError(
+  //         res,
+  //         "Borrow ID is required",
+  //         ResponseCode.BAD_REQUEST,
+  //       );
+  //     }
 
-      const borrow = await this.borrowService.getBorrowByField({
-        borrowId: Utility.escapeHtml(borrowId),
-      });
-      if (!borrow) {
-        return Utility.handleError(
-          res,
-          "Borrow record not found",
-          ResponseCode.NOT_FOUND,
-        );
-      }
+  //     const borrow = await this.borrowService.getBorrowByField({
+  //       borrowId: Utility.escapeHtml(borrowId),
+  //     });
+  //     if (!borrow) {
+  //       return Utility.handleError(
+  //         res,
+  //         "Borrow record not found",
+  //         ResponseCode.NOT_FOUND,
+  //       );
+  //     }
+  //     return Utility.handleSuccess(
+  //       res,
+  //       "Borrow record fetched successfully",
+  //       { borrow },
+  //       ResponseCode.SUCCESS,
+  //     );
+  //   } catch (error) {
+  //     return Utility.handleError(
+  //       res,
+  //       (error as TypeError).message,
+  //       ResponseCode.SERVER_ERROR,
+  //     );
+  //   }
+  // }
+
+  // Fetch all borrow records by user ID
+  async getBorrowsByUser(req: Request, res: Response) {
+    try {
+      const { userId } = req.params;
+      const borrows = await this.borrowService.getBorrowByField({ userId });
       return Utility.handleSuccess(
         res,
-        "Borrow record fetched successfully",
-        { borrow },
-        ResponseCode.SUCCESS,
-      );
-    } catch (error) {
-      return Utility.handleError(
-        res,
-        (error as TypeError).message,
-        ResponseCode.SERVER_ERROR,
-      );
-    }
-  }
-
-  // Fetch a specific borrow record by field
-  async getBorrow(req: Request, res: Response) {
-    try {
-      const { id: borrowId } = req.params;
-      if (!borrowId) {
-        return Utility.handleError(
-          res,
-          "Borrow ID is required",
-          ResponseCode.BAD_REQUEST,
-        );
-      }
-
-      const borrow = await this.borrowService.getBorrowByField({
-        borrowId: Utility.escapeHtml(borrowId),
-      });
-      if (!borrow) {
-        return Utility.handleError(
-          res,
-          "Borrow record not found",
-          ResponseCode.NOT_FOUND,
-        );
-      }
-      return Utility.handleSuccess(
-        res,
-        "Borrow record fetched successfully",
-        { borrow },
+        "Borrow records fetched successfully",
+        { borrows },
         ResponseCode.SUCCESS,
       );
     } catch (error) {
@@ -257,22 +240,9 @@ class BorrowController {
   // Update a specific borrow record
   async updateBorrow(req: Request, res: Response) {
     try {
-      // Ambil dan validasi borrowId dari parameter URL
-      const { id: borrowId } = req.params;
-      if (!borrowId) {
-        return Utility.handleError(
-          res,
-          "Borrow ID is required",
-          ResponseCode.BAD_REQUEST,
-        );
-      }
-
-      // Escape HTML untuk borrowId
-      const sanitizedBorrowId = Utility.escapeHtml(borrowId);
-
-      // Cek apakah borrow record ada
+      const { borrowId, quantity, dateReturn } = req.body;
       const borrowExists = await this.borrowService.getBorrowByField({
-        borrowId: sanitizedBorrowId,
+        borrowId,
       });
       if (!borrowExists) {
         return Utility.handleError(
@@ -282,39 +252,18 @@ class BorrowController {
         );
       }
 
-      // Ambil data untuk diupdate dari request body
-      const { quantity, dateReturn } = req.body;
-
-      // Pastikan data yang diterima untuk pembaruan valid
-      if (!quantity && !dateReturn) {
-        return Utility.handleError(
-          res,
-          "No valid data provided for update",
-          ResponseCode.BAD_REQUEST,
-        );
-      }
-
-      // Update borrow record
-      const updateData: Partial<IBorrowCreationBody> = {};
-      if (quantity) updateData.quantity = quantity;
-      if (dateReturn) updateData.dateReturn = dateReturn;
-
-      await this.borrowService.updateBorrowRecord(
-        { borrowId: sanitizedBorrowId },
-        updateData,
-      );
-
-      // Kembalikan respons sukses
+      const updateData = { quantity, dateReturn };
+      await this.borrowService.updateBorrowRecord({ borrowId }, updateData);
       return Utility.handleSuccess(
         res,
         "Borrow record updated successfully",
-        { borrowId: sanitizedBorrowId, updatedFields: updateData },
+        { borrowId, updatedFields: updateData },
         ResponseCode.SUCCESS,
       );
     } catch (error) {
       return Utility.handleError(
         res,
-        (error as Error).message,
+        (error as TypeError).message,
         ResponseCode.SERVER_ERROR,
       );
     }

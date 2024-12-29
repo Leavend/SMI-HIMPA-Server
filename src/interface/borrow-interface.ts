@@ -1,4 +1,4 @@
-import { Optional, Model, Sequelize } from "sequelize";
+import { Optional, Model } from "sequelize";
 
 // Interface utama untuk entitas Borrow
 export interface IBorrow {
@@ -41,4 +41,7 @@ export interface IBorrowDataSource {
   create(record: IBorrowCreationBody): Promise<IBorrow>;
   updateOne(searchBy: IFindBorrowQuery, data: Partial<IBorrow>): Promise<void>;
   deleteOne(query: IFindBorrowQuery): Promise<void>;
+  getBorrowByField(field: {
+    [key: string]: string | number;
+  }): Promise<IBorrow[] | null>; // New method
 }

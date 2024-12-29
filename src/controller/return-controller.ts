@@ -1,65 +1,24 @@
 import { Request, Response } from "express";
 import { autoInjectable } from "tsyringe";
-import { IReturnCreationBody } from "../interface/return-interface";
 import ReturnService from "../service/return-service";
 import UserService from "../service/user-service";
+import BorrowService from "../service/borrow-service";
 import Utility from "../utils/index.utils";
 import { ResponseCode } from "../interface/enum/code-enum";
 import Permissions from "../permission";
+import { IReturn } from "../interface/return-interface";
 
 @autoInjectable()
 class ReturnController {
-  private returnService: ReturnService;
-  private userService: UserService;
+  constructor(
+    private returnService: ReturnService,
+    private userService: UserService,
+    private borrowService: BorrowService,
+  ) {}
 
-  constructor(_returnService: ReturnService, _userService: UserService) {
-    this.returnService = _returnService;
-    this.userService = _userService;
-  }
-
-  // Create a new return record
-  async createReturn(req: Request, res: Response) {
-    try {
-      const { borrowId, quantity, dateReturn, lateDays, userId } = req.body;
-      const newReturn: IReturnCreationBody = {
-        borrowId,
-        quantity,
-        dateReturn: dateReturn || new Date(),
-        lateDays: lateDays || 0,
-      };
-
-      // Validate user
-      const user = await this.userService.getUserByField(userId);
-      if (!user || !user.number) {
-        return Utility.handleError(
-          res,
-          "User not found or phone number is missing.",
-          ResponseCode.NOT_FOUND,
-        );
-      }
-
-      // Create new return record
-      const returnRecord = await this.returnService.createReturn(newReturn);
-
-      return Utility.handleSuccess(
-        res,
-        "Return record created successfully",
-        { returnRecord },
-        ResponseCode.SUCCESS,
-      );
-    } catch (error) {
-      return Utility.handleError(
-        res,
-        (error as TypeError).message,
-        ResponseCode.SERVER_ERROR,
-      );
-    }
-  }
-
-  // Fetch all return records
   async findAllReturns(req: Request, res: Response) {
     try {
-      const admin = req.body.user;
+      const { user: admin } = req.body;
       const permission = Permissions.can(admin.role).readAny("returns");
       if (!permission.granted) {
         return Utility.handleError(
@@ -85,27 +44,56 @@ class ReturnController {
     }
   }
 
-  // Fetch a specific return record by ID
-  async getReturnById(req: Request, res: Response) {
+  async findReturnsByUser(req: Request, res: Response) {
     try {
-      const { returnId } = req.params;
-      const returnRecord = await this.returnService.getReturnByField({
-        returnId,
-      });
-      if (!returnRecord) {
+      const { userId } = req.params;
+
+      const user = await this.userService.getUserByField({ userId });
+      if (!user) {
         return Utility.handleError(
           res,
-          "Return record not found",
+          "User not found",
           ResponseCode.NOT_FOUND,
         );
       }
+
+      const borrowRecords = await this.borrowService.getBorrowsByFields({
+        userId,
+      });
+      if (!borrowRecords || borrowRecords.length === 0) {
+        return Utility.handleError(
+          res,
+          "No borrow records found for this user",
+          ResponseCode.NOT_FOUND,
+        );
+      }
+
+      const borrowIds = borrowRecords.map((borrow: any) => borrow.borrowId);
+      const returnRecords: IReturn[] = await Promise.all(
+        borrowIds.map(
+          async (borrowId) =>
+            await this.returnService.getReturnByField({ borrowId }),
+        ),
+      ).then((records) =>
+        records.filter((record): record is IReturn => record !== null),
+      );
+
+      if (returnRecords.length === 0) {
+        return Utility.handleError(
+          res,
+          "No return records found for this user",
+          ResponseCode.NOT_FOUND,
+        );
+      }
+
       return Utility.handleSuccess(
         res,
-        "Return record fetched successfully",
-        { returnRecord },
+        "Return records fetched successfully",
+        { returnRecords },
         ResponseCode.SUCCESS,
       );
     } catch (error) {
+      console.error("Error fetching return records by user:", error);
       return Utility.handleError(
         res,
         (error as TypeError).message,
@@ -114,7 +102,6 @@ class ReturnController {
     }
   }
 
-  // Update a specific return record
   async updateReturn(req: Request, res: Response) {
     try {
       const { returnId, quantity, dateReturn, fineAmount, lateDays } = req.body;
@@ -146,7 +133,6 @@ class ReturnController {
     }
   }
 
-  // Delete a specific return record
   async deleteReturn(req: Request, res: Response) {
     try {
       const { returnId } = req.params;

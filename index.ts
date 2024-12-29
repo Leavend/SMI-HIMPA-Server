@@ -7,6 +7,7 @@ import UserRouter from "./src/routes/user-routes";
 import BorrowRouter from "./src/routes/borrow-routes";
 import InventoryRouter from "./src/routes/inventory-routes";
 import AdminRouter from "./src/routes/admin-routes";
+import ReturnRouter from "./src/routes/return-routes";
 import { Client, LocalAuth } from "whatsapp-web.js";
 import qrcode from "qrcode-terminal";
 
@@ -45,6 +46,7 @@ app.use("/api/user", UserRouter);
 app.use("/api/borrow", BorrowRouter);
 app.use("/api/inventory", InventoryRouter);
 app.use("/api/admin", AdminRouter);
+app.use("/api/return", ReturnRouter);
 
 app.get("/", (req: Request, res: Response) => {
   res.send(`Welcome to ${process.env.APPNAME}`);

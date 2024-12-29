@@ -8,30 +8,35 @@ const router = express.Router();
 
 const userController = container.resolve(UserController);
 
-const handleRequest = (method: keyof UserController) => {
-  return (req: Request, res: Response) => userController[method](req, res);
+const asyncHandler = (fn: Function) => (req: Request, res: Response) => {
+  Promise.resolve(fn(req, res)).catch((err) =>
+    res.status(500).send(err.message),
+  );
 };
 
 const createUserRoute = () => {
   router.post(
     "/register",
     validator(ValidationSchema.registerSchema),
-    handleRequest("register"),
+    asyncHandler(userController.register.bind(userController)),
   );
+
   router.post(
     "/login",
     validator(ValidationSchema.loginSchema),
-    handleRequest("login"),
+    asyncHandler(userController.login.bind(userController)),
   );
+
   router.post(
     "/forgot-password",
     validator(ValidationSchema.forgotPasswordSchema),
-    handleRequest("forgotPassword"),
+    asyncHandler(userController.forgotPassword.bind(userController)),
   );
+
   router.post(
     "/reset-password",
     validator(ValidationSchema.resetPasswordSchema),
-    handleRequest("resetPassword"),
+    asyncHandler(userController.resetPassword.bind(userController)),
   );
 
   return router;

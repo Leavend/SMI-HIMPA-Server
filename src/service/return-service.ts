@@ -20,6 +20,13 @@ class ReturnService {
     return this.returnDataSource.fetchOne(query);
   }
 
+  // Get return records
+  async getReturnByFields(record: Partial<IReturn>): Promise<IReturn[]> {
+    const query = { where: { ...record }, raw: true } as IFindReturnQuery;
+    const result = await this.returnDataSource.fetchAll(query);
+    return result || [];
+  }
+
   // Mendapatkan semua record return
   async getAllReturns(): Promise<IReturn[] | null> {
     const query = {
