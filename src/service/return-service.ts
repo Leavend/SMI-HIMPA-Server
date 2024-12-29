@@ -31,7 +31,10 @@ class ReturnService {
   }
 
   // Membuat record return baru
-  async createReturn(record: IReturnCreationBody): Promise<IReturn> {
+  async createReturn(
+    record: IReturnCreationBody,
+    transaction?: any,
+  ): Promise<IReturn> {
     return this.returnDataSource.create(record);
   }
 

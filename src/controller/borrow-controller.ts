@@ -10,6 +10,7 @@ import { ResponseCode } from "../interface/enum/code-enum";
 import Permissions from "../permission";
 import { BorrowStatus } from "../interface/enum/borrow-enum";
 import InventoryService from "../service/inventory-service";
+import ReturnService from "../service/return-service";
 
 @autoInjectable()
 class BorrowController {
@@ -17,17 +18,20 @@ class BorrowController {
   private userService: UserService;
   private inventoryService: InventoryService;
   private borrowDetailService: BorrowDetailService;
+  private returnService: ReturnService;
 
   constructor(
     _borrowService: BorrowService,
     _userService: UserService,
     _inventoryService: InventoryService,
     _borrowDetailService: BorrowDetailService,
+    _returnService: ReturnService,
   ) {
     this.borrowService = _borrowService;
     this.userService = _userService;
     this.inventoryService = _inventoryService;
     this.borrowDetailService = _borrowDetailService;
+    this.returnService = _returnService;
   }
 
   // Create a new borrow record
@@ -87,6 +91,15 @@ class BorrowController {
         transaction,
       );
 
+      await this.returnService.createReturn(
+        {
+          borrowId: borrow.borrowId,
+          quantity: params.quantity,
+          dateBorrow: params.dateBorrow,
+          dateReturn: params.dateReturn,
+        },
+        transaction,
+      );
       // Commit transaksi
       await transaction.commit();
 

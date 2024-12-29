@@ -3,7 +3,7 @@ import path from "path";
 import { whatsappClient } from "../../index";
 import Utility from "../utils/index.utils";
 import { htmlToText } from "html-to-text";
-import moment from "moment"; // Pastikan Anda memiliki moment.js sebagai dependency
+import moment from "moment";
 
 const whatsappTemplateCommon = path.join(
   __dirname,
