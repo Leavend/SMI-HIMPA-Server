@@ -7,22 +7,22 @@ import {
 import ReturnModel from "../model/return-model";
 
 class ReturnDataSource implements IReturnDataSource {
-  // Buat return record baru
+  // Create a new return record
   async create(record: IReturnCreationBody): Promise<IReturn> {
-    return await ReturnModel.create(record);
+    return ReturnModel.create(record);
   }
 
-  // Fetch satu record return berdasarkan kriteria pencarian
+  // Fetch a single return record based on search criteria
   async fetchOne(query: IFindReturnQuery): Promise<IReturn | null> {
-    return await ReturnModel.findOne(query);
+    return ReturnModel.findOne(query);
   }
 
-  // Fetch semua record return berdasarkan kriteria pencarian
+  // Fetch all return records based on search criteria
   async fetchAll(query: IFindReturnQuery): Promise<IReturn[] | null> {
-    return await ReturnModel.findAll(query);
+    return ReturnModel.findAll(query);
   }
 
-  // Update satu record return berdasarkan kriteria pencarian
+  // Update a single return record based on search criteria
   async updateOne(
     searchBy: IFindReturnQuery,
     data: Partial<IReturn>,
@@ -30,7 +30,7 @@ class ReturnDataSource implements IReturnDataSource {
     await ReturnModel.update(data, searchBy);
   }
 
-  // Hapus satu record return berdasarkan kriteria pencarian
+  // Delete a single return record based on search criteria
   async deleteOne(query: IFindReturnQuery): Promise<void> {
     await ReturnModel.destroy(query);
   }

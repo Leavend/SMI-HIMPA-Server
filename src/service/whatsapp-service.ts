@@ -19,6 +19,11 @@ const whatsappTemplateBorrow = path.join(
 );
 const templateBorrow = fs.readFileSync(whatsappTemplateBorrow, "utf8");
 
+interface User {
+  username?: string;
+  email?: string;
+}
+
 class WhatsAppService {
   private static replacePlaceholders(
     template: string,
@@ -35,37 +40,37 @@ class WhatsAppService {
     to: string,
     textMessage: string,
   ): Promise<void> {
-    try {
-      const chatId = Utility.formatPhoneNumberToWhatsApp(to);
-      await whatsappClient.sendMessage(chatId, textMessage);
-      console.log(`Message sent to ${to}`);
-    } catch (error) {
-      console.error("Error sending WhatsApp message:", error);
-      throw error;
-    }
+    const chatId = Utility.formatPhoneNumberToWhatsApp(to);
+    await whatsappClient.sendMessage(chatId, textMessage);
+    console.log(`Message sent to ${to}`);
   }
 
   private static formatDate(date: string | Date): string {
-    // Mengubah format tanggal menjadi DD MMMM YYYY
     return moment(date).format("DD MMMM YYYY");
   }
 
+  private static getCommonPlaceholders(user: User, to: string) {
+    return {
+      APP_NAME: process.env.APPNAME || "YourApp",
+      SUPPORT_CONTACT: process.env.SUPPORTMAIL || "support@example.com",
+      NAME: user.username || "User",
+      PHONE: to.replace(/@c\.us$/, ""),
+    };
+  }
+
   static async sendBorrowMessageToUser(
-    user: any,
+    user: User,
     to: string,
     itemName: string,
     dateBorrow: string,
     dueDate: string,
   ) {
     const placeholders = {
-      APP_NAME: process.env.APPNAME || "YourApp",
-      SUPPORT_CONTACT: process.env.SUPPORTMAIL || "support@example.com",
-      NAME: user || "user",
+      ...this.getCommonPlaceholders(user, to),
       SUBJECT: "Borrow Confirmation",
       MESSAGE:
         "You have successfully borrowed an item from our warehouse. Please wait for admin confirmation.",
       ITEM: itemName || "item",
-      PHONE: to.replace(/@c\.us$/, ""),
       DATE: this.formatDate(dateBorrow),
       DUE: this.formatDate(dueDate),
     };
@@ -85,11 +90,8 @@ class WhatsAppService {
     status: string,
   ) {
     const placeholders = {
-      APP_NAME: process.env.APPNAME || "YourApp",
-      SUPPORT_CONTACT: process.env.SUPPORTMAIL || "support@example.com",
-      NAME: user || "user",
+      ...this.getCommonPlaceholders(user, to),
       ITEM: itemName || "item",
-      PHONE: to.replace(/@c\.us$/, ""),
       DATE: this.formatDate(dateBorrow),
       DUE: this.formatDate(dueDate),
       STATUS: status.toUpperCase(),
@@ -110,21 +112,18 @@ class WhatsAppService {
   }
 
   static async sendBorrowMessageToAdmin(
-    user: any,
-    admin: any,
+    user: User,
+    admin: User,
     to: string,
     itemName: string,
     dateBorrow: string,
     dueDate: string,
   ) {
     const placeholders = {
-      APP_NAME: process.env.APPNAME || "YourApp",
-      SUPPORT_CONTACT: process.env.SUPPORTMAIL || "support@example.com",
-      NAME: admin || "user",
+      ...this.getCommonPlaceholders(admin, to),
       SUBJECT: "Borrow Confirmation",
-      MESSAGE: `You have an incoming borrow request from *${user}*. Please confirm the request.`,
+      MESSAGE: `You have an incoming borrow request from *${user.username}*. Please confirm the request.`,
       ITEM: itemName || "item",
-      PHONE: to.replace(/@c\.us$/, ""),
       DATE: this.formatDate(dateBorrow),
       DUE: this.formatDate(dueDate),
     };
@@ -136,19 +135,16 @@ class WhatsAppService {
   }
 
   static async sendMessage(
-    user: any,
+    user: User,
     to: string,
     subject: string,
     message: string,
   ) {
     const placeholders = {
-      APP_NAME: process.env.APPNAME || "YourApp",
-      SUPPORT_CONTACT: process.env.SUPPORTMAIL || "support@example.com",
-      NAME: user.username || "User",
+      ...this.getCommonPlaceholders(user, to),
       SUBJECT: subject,
       MESSAGE: message,
       EMAIL: user.email || "no-reply@example.com",
-      PHONE: to.replace(/@c\.us$/, ""),
       DATE: new Date().toLocaleDateString(),
     };
 

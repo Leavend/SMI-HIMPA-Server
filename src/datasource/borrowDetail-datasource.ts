@@ -9,19 +9,19 @@ import BorrowDetailModel from "../model/borrowDetail-model";
 class BorrowDetailDataSource implements IBorrowDetailDataSource {
   // Buat borrow detail record baru
   async create(record: IBorrowDetailCreationBody): Promise<IBorrowDetail> {
-    return await BorrowDetailModel.create(record);
+    return BorrowDetailModel.create(record);
   }
 
   // Fetch satu record borrow detail berdasarkan kriteria pencarian
   async fetchOne(query: IFindBorrowDetailQuery): Promise<IBorrowDetail | null> {
-    return await BorrowDetailModel.findOne(query);
+    return BorrowDetailModel.findOne(query);
   }
 
   // Fetch semua record borrow detail berdasarkan kriteria pencarian
   async fetchAll(
     query: IFindBorrowDetailQuery,
   ): Promise<IBorrowDetail[] | null> {
-    return await BorrowDetailModel.findAll(query);
+    return BorrowDetailModel.findAll(query);
   }
 
   // Update satu record borrow detail berdasarkan kriteria pencarian
@@ -29,12 +29,12 @@ class BorrowDetailDataSource implements IBorrowDetailDataSource {
     searchBy: IFindBorrowDetailQuery,
     data: Partial<IBorrowDetail>,
   ): Promise<void> {
-    await BorrowDetailModel.update(data, searchBy);
+    return BorrowDetailModel.update(data, searchBy).then(() => {});
   }
 
   // Hapus satu record borrow detail berdasarkan kriteria pencarian
   async deleteOne(query: IFindBorrowDetailQuery): Promise<void> {
-    await BorrowDetailModel.destroy(query);
+    return BorrowDetailModel.destroy(query).then(() => {});
   }
 }
 

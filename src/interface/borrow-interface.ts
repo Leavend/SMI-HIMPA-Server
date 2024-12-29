@@ -41,7 +41,7 @@ export interface IBorrowDataSource {
   create(record: IBorrowCreationBody): Promise<IBorrow>;
   updateOne(searchBy: IFindBorrowQuery, data: Partial<IBorrow>): Promise<void>;
   deleteOne(query: IFindBorrowQuery): Promise<void>;
-  getBorrowByField(field: {
-    [key: string]: string | number;
-  }): Promise<IBorrow[] | null>; // New method
+  // getBorrowByField(field: {
+  //   [key: string]: string | number;
+  // }): Promise<IBorrow[] | null>; // New method
 }

@@ -8,15 +8,15 @@ import InventoryModel from "../model/inventory-model";
 
 class InventoryDataSource implements IInventoryDataSource {
   async create(record: IInventoryCreationBody): Promise<IInventory> {
-    return await InventoryModel.create(record);
+    return InventoryModel.create(record);
   }
 
   async fetchOne(query: IFindInventoryQuery): Promise<IInventory | null> {
-    return await InventoryModel.findOne(query);
+    return InventoryModel.findOne(query);
   }
 
   async fetchAll(query: IFindInventoryQuery): Promise<IInventory[] | null> {
-    return await InventoryModel.findAll(query);
+    return InventoryModel.findAll(query);
   }
 
   async updateOne(
@@ -26,7 +26,6 @@ class InventoryDataSource implements IInventoryDataSource {
     await InventoryModel.update(data, searchBy);
   }
 
-  // Tambahkan metode deleteOne
   async deleteOne(query: IFindInventoryQuery): Promise<void> {
     await InventoryModel.destroy(query);
   }

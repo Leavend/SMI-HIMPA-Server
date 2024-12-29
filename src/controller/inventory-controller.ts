@@ -10,11 +10,7 @@ import { ResponseCode } from "../interface/enum/code-enum";
 
 @autoInjectable()
 class InventoryController {
-  private inventoryService: InventoryService;
-
-  constructor(_inventoryService: InventoryService) {
-    this.inventoryService = _inventoryService;
-  }
+  constructor(private inventoryService: InventoryService) {}
 
   // Create a new inventory item
   async addInventory(req: Request, res: Response) {
@@ -67,34 +63,6 @@ class InventoryController {
       );
     }
   }
-
-  // Fetch a specific inventory by code or other field
-  // async fetchInventory(req: Request, res: Response) {
-  //   try {
-  //     const query = req.query as unknown as IFindInventoryQuery;
-  //     const inventory =
-  //       await this.inventoryService.getAllInventoriesWithQuery(query);
-  //     if (!inventory) {
-  //       return Utility.handleError(
-  //         res,
-  //         "Inventory item not found",
-  //         ResponseCode.NOT_FOUND,
-  //       );
-  //     }
-  //     return Utility.handleSuccess(
-  //       res,
-  //       "Inventory fetched successfully",
-  //       { inventory },
-  //       ResponseCode.SUCCESS,
-  //     );
-  //   } catch (error) {
-  //     return Utility.handleError(
-  //       res,
-  //       (error as TypeError).message,
-  //       ResponseCode.SERVER_ERROR,
-  //     );
-  //   }
-  // }
 
   // Update an inventory item
   async modifyInventory(req: Request, res: Response) {

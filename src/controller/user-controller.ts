@@ -1,61 +1,46 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import JWT from "jsonwebtoken";
-import dotenv from "dotenv";
 import moment from "moment";
 import { autoInjectable } from "tsyringe";
 
 import Utility from "../utils/index.utils";
 import { ResponseCode } from "../interface/enum/code-enum";
-import Permissions from "../permission/index";
 import { UserRoles } from "../interface/enum/user-enum";
 
 import UserService from "../service/user-service";
-
 import TokenService from "../service/token-service";
 import { IToken } from "../interface/token-interface";
-
 import EmailService from "../service/email-service";
-
 import WhatsAppService from "../service/whatsapp-service";
 
 @autoInjectable()
 class UserController {
-  private userService: UserService;
-  private tokenService: TokenService;
-
-  constructor(_userService: UserService, _tokenService: TokenService) {
-    this.userService = _userService;
-    this.tokenService = _tokenService;
-  }
+  constructor(
+    private userService: UserService,
+    private tokenService: TokenService,
+  ) {}
 
   // Register new user
   async register(req: Request, res: Response) {
     try {
       const { email, username, password, number } = req.body;
 
-      // Format phone number
-      let formattedNumber;
-      try {
-        formattedNumber = Utility.formatPhoneNumberToWhatsApp(number);
-      } catch (err) {
-        return Utility.handleError(
-          res,
-          "Invalid phone number format. Please provide a valid number.",
-          ResponseCode.BAD_REQUEST,
-        );
-      }
+      const formattedNumber = Utility.formatPhoneNumberToWhatsApp(number);
 
-      // Validate uniqueness of email and number separately
-      const existingEmail = await this.userService.getUserByField({ email });
-      const existingNumber = await this.userService.getUserByField({
+      const existingUser = await this.userService.getUserByField({
+        email,
         number: formattedNumber,
+        username,
       });
 
-      const existingUser = existingEmail || existingNumber;
-
       if (existingUser) {
-        const errorField = existingUser.email === email ? "Email" : "Number";
+        const errorField =
+          existingUser.email === email
+            ? "Email"
+            : existingUser.number === formattedNumber
+              ? "Number"
+              : "Username";
         return Utility.handleError(
           res,
           `${errorField} already exists`,
@@ -63,18 +48,6 @@ class UserController {
         );
       }
 
-      const existingUsername = await this.userService.getUserByField({
-        username,
-      });
-      if (existingUsername) {
-        return Utility.handleError(
-          res,
-          `Username already exists`,
-          ResponseCode.ALREADY_EXIST,
-        );
-      }
-
-      // Create user object
       const hashedPassword = await bcrypt.hash(password, 10);
       const newUser = {
         email,
@@ -87,19 +60,12 @@ class UserController {
       const user = await this.userService.createUser(newUser);
       user.password = ""; // Remove sensitive data
 
-      // Send WhatsApp message
-      try {
-        const subject = "Account Registration";
-        const message = `📢 Your account has been successfully created!`;
-        await WhatsAppService.sendMessage(
-          user,
-          formattedNumber,
-          subject,
-          message,
-        );
-      } catch (err) {
-        console.error("Failed to send WhatsApp message.", err);
-      }
+      await WhatsAppService.sendMessage(
+        user,
+        formattedNumber,
+        "Account Registration",
+        "📢 Your account has been successfully created!",
+      );
 
       Utility.handleSuccess(
         res,
@@ -121,7 +87,6 @@ class UserController {
     try {
       const { username, password } = req.body;
 
-      // Fetch user by username
       const user = await this.userService.getUserByField({ username });
       if (!user || !(await bcrypt.compare(password, user.password))) {
         return Utility.handleError(
@@ -131,7 +96,6 @@ class UserController {
         );
       }
 
-      // Generate JWT token
       const token = JWT.sign(
         { userId: user.userId, email: user.email, role: user.role },
         process.env.JWT_KEY as string,
@@ -147,7 +111,6 @@ class UserController {
         ResponseCode.SUCCESS,
       );
     } catch (error) {
-      console.error("Login error:", error);
       Utility.handleError(
         res,
         "An error occurred during login.",
@@ -170,7 +133,6 @@ class UserController {
         );
       }
 
-      // Generate token and send email
       const token = (await this.tokenService.createForgotPasswordToken(
         email,
       )) as IToken;
@@ -258,18 +220,7 @@ class UserController {
   async updateRole(req: Request, res: Response) {
     try {
       const { userId, newRole } = req.body;
-      const admin = req.body.user;
 
-      // Validate permission
-      if (!Permissions.can(admin.role).updateAny("users").granted) {
-        return Utility.handleError(
-          res,
-          "Invalid Permission",
-          ResponseCode.FORBIDDEN,
-        );
-      }
-
-      // Validate role
       if (!Object.values(UserRoles).includes(newRole)) {
         return Utility.handleError(
           res,
@@ -278,7 +229,6 @@ class UserController {
         );
       }
 
-      // Validate User
       const user = await this.userService.getUserByField({ userId });
       if (!user) {
         return Utility.handleError(
@@ -288,7 +238,6 @@ class UserController {
         );
       }
 
-      // Update role
       await this.userService.updateRecord({ userId }, { role: newRole });
       Utility.handleSuccess(
         res,
@@ -297,7 +246,6 @@ class UserController {
         ResponseCode.SUCCESS,
       );
     } catch (error) {
-      console.error("Role update error:", error);
       Utility.handleError(
         res,
         "An error occurred during role update.",
@@ -309,16 +257,6 @@ class UserController {
   // Get All User By Admin
   async getAllUsersByAdmin(req: Request, res: Response) {
     try {
-      const admin = req.body.user;
-      const permission = Permissions.can(admin.role).readAny("users");
-      if (!permission.granted) {
-        return Utility.handleError(
-          res,
-          "Invalid Permission",
-          ResponseCode.FORBIDDEN,
-        );
-      }
-
       const users = await this.userService.getAllUsers();
       if (!users) {
         return Utility.handleError(
@@ -339,8 +277,7 @@ class UserController {
         ResponseCode.SUCCESS,
       );
     } catch (error) {
-      console.error("Error fetching users:", error);
-      return Utility.handleError(
+      Utility.handleError(
         res,
         "An error occurred while fetching users.",
         ResponseCode.SERVER_ERROR,
@@ -352,15 +289,6 @@ class UserController {
   async getSingleUserById(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const admin = req.body.user;
-      const permission = Permissions.can(admin.role).readAny("users");
-      if (!permission.granted) {
-        return Utility.handleError(
-          res,
-          "Invalid Permission",
-          ResponseCode.FORBIDDEN,
-        );
-      }
       const user = await this.userService.getUserByField({
         userId: Utility.escapeHtml(id),
       });
@@ -379,7 +307,7 @@ class UserController {
         ResponseCode.SUCCESS,
       );
     } catch (error) {
-      return Utility.handleError(
+      Utility.handleError(
         res,
         "An error occurred while fetching the user.",
         ResponseCode.SERVER_ERROR,
@@ -391,15 +319,6 @@ class UserController {
   async getUserRoleAdmin(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const admin = req.body.user;
-      const permission = Permissions.can(admin.role).readAny("accounts");
-      if (!permission.granted) {
-        return Utility.handleError(
-          res,
-          "Invalid Permission",
-          ResponseCode.FORBIDDEN,
-        );
-      }
       const userAdmin = await this.userService.getUserByField({
         userId: Utility.escapeHtml(id),
       });
@@ -418,7 +337,7 @@ class UserController {
         ResponseCode.SUCCESS,
       );
     } catch (error) {
-      return Utility.handleError(
+      Utility.handleError(
         res,
         "An error occurred while fetching the account.",
         ResponseCode.SERVER_ERROR,

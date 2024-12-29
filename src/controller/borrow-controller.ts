@@ -14,25 +14,13 @@ import ReturnService from "../service/return-service";
 
 @autoInjectable()
 class BorrowController {
-  private borrowService: BorrowService;
-  private userService: UserService;
-  private inventoryService: InventoryService;
-  private borrowDetailService: BorrowDetailService;
-  private returnService: ReturnService;
-
   constructor(
-    _borrowService: BorrowService,
-    _userService: UserService,
-    _inventoryService: InventoryService,
-    _borrowDetailService: BorrowDetailService,
-    _returnService: ReturnService,
-  ) {
-    this.borrowService = _borrowService;
-    this.userService = _userService;
-    this.inventoryService = _inventoryService;
-    this.borrowDetailService = _borrowDetailService;
-    this.returnService = _returnService;
-  }
+    private borrowService: BorrowService,
+    private userService: UserService,
+    private inventoryService: InventoryService,
+    private borrowDetailService: BorrowDetailService,
+    private returnService: ReturnService,
+  ) {}
 
   // Create a new borrow record
   async createBorrow(req: Request, res: Response) {
@@ -40,7 +28,6 @@ class BorrowController {
     try {
       const params = { ...req.body };
 
-      // Validasi kuantitas inventory
       const item = await this.inventoryService.getInventoryByField({
         inventoryId: params.inventoryId,
       });
@@ -52,7 +39,6 @@ class BorrowController {
         );
       }
 
-      // Validasi pengguna dan admin
       const [user, admin] = await Promise.all([
         this.userService.getUserByField({ userId: params.userId }),
         this.userService.getUserByField({ userId: params.adminId }),
@@ -61,14 +47,13 @@ class BorrowController {
         throw new Error("User or admin details are missing.");
       }
 
-      // Buat objek untuk borrow baru
-      const newBorrow = {
+      const newBorrow: IBorrowCreationBody = {
         quantity: params.quantity,
         dateBorrow: params.dateBorrow,
         dateReturn: params.dateReturn,
         userId: params.userId,
         adminId: params.adminId,
-      } as IBorrowCreationBody;
+      };
 
       const borrow = await this.borrowService.createBorrow(
         newBorrow,
@@ -84,7 +69,6 @@ class BorrowController {
         transaction,
       );
 
-      // Perbarui jumlah inventory
       await this.inventoryService.updateInventoryRecord(
         { inventoryId: item.inventoryId },
         { quantity: item.quantity - params.quantity },
@@ -100,42 +84,11 @@ class BorrowController {
         },
         transaction,
       );
-      // Commit transaksi
+
       await transaction.commit();
 
-      // Kirim notifikasi WhatsApp (di luar transaksi)
-      try {
-        await WhatsAppService.sendBorrowMessageToUser(
-          user.username,
-          user.number,
-          item.name,
-          params.dateBorrow,
-          params.dateReturn,
-        );
-      } catch (whatsAppError) {
-        console.error(
-          "Failed to send WhatsApp notification to user:",
-          whatsAppError,
-        );
-      }
+      await this.sendWhatsAppNotifications(user, admin, item, params);
 
-      try {
-        await WhatsAppService.sendBorrowMessageToAdmin(
-          user.username,
-          admin.username,
-          admin.number,
-          item.name,
-          params.dateBorrow,
-          params.dateReturn,
-        );
-      } catch (whatsAppError) {
-        console.error(
-          "Failed to send WhatsApp notification to admin:",
-          whatsAppError,
-        );
-      }
-
-      // Kembalikan respons sukses
       return Utility.handleSuccess(
         res,
         "Borrow record and details created successfully",
@@ -143,6 +96,7 @@ class BorrowController {
         ResponseCode.SUCCESS,
       );
     } catch (error) {
+      await transaction.rollback();
       return Utility.handleError(
         res,
         (error as TypeError).message,
@@ -151,19 +105,47 @@ class BorrowController {
     }
   }
 
+  private async sendWhatsAppNotifications(
+    user: any,
+    admin: any,
+    item: any,
+    params: any,
+  ) {
+    try {
+      await WhatsAppService.sendBorrowMessageToUser(
+        user.username,
+        user.number,
+        item.name,
+        params.dateBorrow,
+        params.dateReturn,
+      );
+    } catch (whatsAppError) {
+      console.error(
+        "Failed to send WhatsApp notification to user:",
+        whatsAppError,
+      );
+    }
+
+    try {
+      await WhatsAppService.sendBorrowMessageToAdmin(
+        user.username,
+        admin.username,
+        admin.number,
+        item.name,
+        params.dateBorrow,
+        params.dateReturn,
+      );
+    } catch (whatsAppError) {
+      console.error(
+        "Failed to send WhatsApp notification to admin:",
+        whatsAppError,
+      );
+    }
+  }
+
   // Fetch all borrow records
   async findAllBorrows(req: Request, res: Response) {
     try {
-      const admin = req.body.user;
-      const permission = Permissions.can(admin.role).readAny("borrows");
-      if (!permission.granted) {
-        return Utility.handleError(
-          res,
-          "Invalid Permission",
-          ResponseCode.FORBIDDEN,
-        );
-      }
-
       const borrows = await this.borrowService.getAllBorrows();
       return Utility.handleSuccess(
         res,
@@ -179,43 +161,6 @@ class BorrowController {
       );
     }
   }
-
-  // // Fetch a specific borrow record by field
-  // async getBorrow(req: Request, res: Response) {
-  //   try {
-  //     const { id: borrowId } = req.params;
-  //     if (!borrowId) {
-  //       return Utility.handleError(
-  //         res,
-  //         "Borrow ID is required",
-  //         ResponseCode.BAD_REQUEST,
-  //       );
-  //     }
-
-  //     const borrow = await this.borrowService.getBorrowByField({
-  //       borrowId: Utility.escapeHtml(borrowId),
-  //     });
-  //     if (!borrow) {
-  //       return Utility.handleError(
-  //         res,
-  //         "Borrow record not found",
-  //         ResponseCode.NOT_FOUND,
-  //       );
-  //     }
-  //     return Utility.handleSuccess(
-  //       res,
-  //       "Borrow record fetched successfully",
-  //       { borrow },
-  //       ResponseCode.SUCCESS,
-  //     );
-  //   } catch (error) {
-  //     return Utility.handleError(
-  //       res,
-  //       (error as TypeError).message,
-  //       ResponseCode.SERVER_ERROR,
-  //     );
-  //   }
-  // }
 
   // Fetch all borrow records by user ID
   async getBorrowsByUser(req: Request, res: Response) {
@@ -315,17 +260,6 @@ class BorrowController {
       const { borrowId, status } = req.body;
       const admin = req.body.user;
 
-      // 1. Validate user permissions
-      const permission = Permissions.can(admin.role).updateAny("borrows");
-      if (!permission.granted) {
-        return Utility.handleError(
-          res,
-          "You do not have permission to update borrow records.",
-          ResponseCode.FORBIDDEN,
-        );
-      }
-
-      // 2. Validate borrow record and borrow detail
       const [borrow, borrowDetail] = await Promise.all([
         this.borrowService.getBorrowByField({ borrowId }),
         this.borrowDetailService.getBorrowDetailByField({ borrowId }),
@@ -339,7 +273,6 @@ class BorrowController {
         );
       }
 
-      // 3. Validate current status
       if (borrowDetail.status !== BorrowStatus.PENDING) {
         return Utility.handleError(
           res,
@@ -348,7 +281,6 @@ class BorrowController {
         );
       }
 
-      // 4. Validate and update status
       if (![BorrowStatus.ACTIVE, BorrowStatus.REJECTED].includes(status)) {
         return Utility.handleError(
           res,
@@ -357,76 +289,17 @@ class BorrowController {
         );
       }
 
-      if (status === BorrowStatus.ACTIVE) {
-        // Update the borrow status to ACTIVE
-        await this.borrowDetailService.updateBorrowDetailRecord(
-          { borrowId },
-          { status: BorrowStatus.ACTIVE },
-        );
+      await this.borrowDetailService.updateBorrowDetailRecord(
+        { borrowId },
+        { status },
+      );
 
-        // Additional logic for ACTIVE status can be added here
-      } else if (status === BorrowStatus.REJECTED) {
-        // Update the borrow status to REJECTED
-        await this.borrowDetailService.updateBorrowDetailRecord(
-          { borrowId },
-          { status: BorrowStatus.REJECTED },
-        );
-      }
+      await this.sendApprovalNotification(borrow, borrowDetail, status);
 
-      // 5. Send WhatsApp notification
-      try {
-        // Extract user information from the borrow record
-        const user = await this.userService.getUserByField({
-          userId: borrow.userId,
-        });
-        const item = await this.inventoryService.getInventoryByField({
-          inventoryId: borrowDetail.inventoryId,
-        });
-
-        if (!user || !item) {
-          console.warn(
-            "User or item details not found. Skipping WhatsApp notification.",
-          );
-        } else {
-          // Prepare notification details
-          const notificationData = {
-            username: user.username,
-            number: user.number,
-            itemName: item.name,
-            dateBorrow: borrow.dateBorrow,
-            dateReturn: borrow.dateReturn,
-            status,
-          };
-
-          // Send WhatsApp notification
-          await WhatsAppService.sendConfirmationBorrowMessageToUser(
-            notificationData.username,
-            notificationData.number,
-            notificationData.itemName,
-            notificationData.dateBorrow.toISOString(),
-            notificationData.dateReturn
-              ? notificationData.dateReturn.toISOString()
-              : "",
-            notificationData.status,
-          );
-
-          console.log(
-            "WhatsApp notification sent successfully to user:",
-            notificationData.number,
-          );
-        }
-      } catch (whatsAppError) {
-        console.error(
-          "Failed to send WhatsApp notification to user:",
-          whatsAppError,
-        );
-      }
-
-      // 6. Return success response
       return Utility.handleSuccess(
         res,
-        "Borrow status successfully updated to Active.",
-        { borrowId, status: BorrowStatus.ACTIVE },
+        `Borrow status successfully updated to ${status}.`,
+        { borrowId, status },
         ResponseCode.SUCCESS,
       );
     } catch (error) {
@@ -435,6 +308,58 @@ class BorrowController {
         res,
         (error as Error).message,
         ResponseCode.SERVER_ERROR,
+      );
+    }
+  }
+
+  private async sendApprovalNotification(
+    borrow: any,
+    borrowDetail: any,
+    status: any,
+  ) {
+    try {
+      const user = await this.userService.getUserByField({
+        userId: borrow.userId,
+      });
+      const item = await this.inventoryService.getInventoryByField({
+        inventoryId: borrowDetail.inventoryId,
+      });
+
+      if (!user || !item) {
+        console.warn(
+          "User or item details not found. Skipping WhatsApp notification.",
+        );
+        return;
+      }
+
+      const notificationData = {
+        username: user.username,
+        number: user.number,
+        itemName: item.name,
+        dateBorrow: borrow.dateBorrow,
+        dateReturn: borrow.dateReturn,
+        status,
+      };
+
+      await WhatsAppService.sendConfirmationBorrowMessageToUser(
+        notificationData.username,
+        notificationData.number,
+        notificationData.itemName,
+        notificationData.dateBorrow.toISOString(),
+        notificationData.dateReturn
+          ? notificationData.dateReturn.toISOString()
+          : "",
+        notificationData.status,
+      );
+
+      console.log(
+        "WhatsApp notification sent successfully to user:",
+        notificationData.number,
+      );
+    } catch (whatsAppError) {
+      console.error(
+        "Failed to send WhatsApp notification to user:",
+        whatsAppError,
       );
     }
   }

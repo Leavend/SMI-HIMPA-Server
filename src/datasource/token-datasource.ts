@@ -8,11 +8,11 @@ import TokenModel from "../model/token-model";
 
 class TokenDataSource implements ITokenDataSource {
   async create(record: ITokenCreationBody): Promise<IToken> {
-    return await TokenModel.create(record);
+    return TokenModel.create(record);
   }
 
   async fetchOne(query: IFindTokenQuery): Promise<IToken | null> {
-    return await TokenModel.findOne(query);
+    return TokenModel.findOne(query);
   }
 
   async updateOne(

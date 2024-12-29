@@ -7,40 +7,40 @@ import {
 import BorrowModel from "../model/borrow-model";
 
 class BorrowDataSource implements IBorrowDataSource {
-  // Buat borrow record baru
+  // Create a new borrow record
   async create(record: IBorrowCreationBody): Promise<IBorrow> {
-    return await BorrowModel.create(record);
+    return BorrowModel.create(record);
   }
 
-  // Fetch satu record borrow berdasarkan kriteria pencarian
+  // Fetch a single borrow record based on search criteria
   async fetchOne(query: IFindBorrowQuery): Promise<IBorrow | null> {
-    return await BorrowModel.findOne(query);
+    return BorrowModel.findOne(query);
   }
 
-  // Fetch semua record borrow berdasarkan kriteria pencarian
+  // Fetch all borrow records based on search criteria
   async fetchAll(query: IFindBorrowQuery): Promise<IBorrow[] | null> {
-    return await BorrowModel.findAll(query);
+    return BorrowModel.findAll(query);
   }
 
-  // Update satu record borrow berdasarkan kriteria pencarian
+  // Update a single borrow record based on search criteria
   async updateOne(
     searchBy: IFindBorrowQuery,
     data: Partial<IBorrow>,
   ): Promise<void> {
-    await BorrowModel.update(data, searchBy);
+    await BorrowModel.update(data, { where: searchBy as any });
   }
 
-  // Hapus satu record borrow berdasarkan kriteria pencarian
+  // Delete a single borrow record based on search criteria
   async deleteOne(query: IFindBorrowQuery): Promise<void> {
-    await BorrowModel.destroy(query);
+    await BorrowModel.destroy({ where: query as any });
   }
 
-  // Implementasi transaction
+  // Implement transaction
   async transaction(): Promise<any> {
     if (!BorrowModel.sequelize) {
       throw new Error("Sequelize instance is not available");
     }
-    return await BorrowModel.sequelize.transaction();
+    return BorrowModel.sequelize.transaction();
   }
 }
 
