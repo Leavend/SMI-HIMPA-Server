@@ -166,11 +166,31 @@ class BorrowController {
   async getBorrowsByUser(req: Request, res: Response) {
     try {
       const { userId } = req.params;
-      const borrows = await this.borrowService.getBorrowByField({ userId });
+
+      const user = await this.userService.getUserByField({ userId });
+      if (!user) {
+        return Utility.handleError(
+          res,
+          "User not found",
+          ResponseCode.NOT_FOUND,
+        );
+      }
+
+      const borrowRecords = await this.borrowService.getBorrowsByFields({
+        userId,
+      });
+      if (!borrowRecords || borrowRecords.length === 0) {
+        return Utility.handleError(
+          res,
+          "No borrow records found for this user",
+          ResponseCode.NOT_FOUND,
+        );
+      }
+
       return Utility.handleSuccess(
         res,
         "Borrow records fetched successfully",
-        { borrows },
+        { borrowRecords },
         ResponseCode.SUCCESS,
       );
     } catch (error) {
@@ -185,7 +205,9 @@ class BorrowController {
   // Update a specific borrow record
   async updateBorrow(req: Request, res: Response) {
     try {
-      const { borrowId, quantity, dateReturn } = req.body;
+      const { id: borrowId } = req.params;
+      const { quantity, dateReturn } = req.body;
+
       const borrowExists = await this.borrowService.getBorrowByField({
         borrowId,
       });

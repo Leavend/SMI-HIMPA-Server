@@ -1,14 +1,14 @@
 import Db from "../database";
 import { ITokenModel } from "../interface/token-interface";
 import { DataTypes } from "sequelize";
-import { v4 as uuidv4 } from "uuid";
+import { v7 as uuidv7 } from "uuid";
 
 const TokenModel = Db.define<ITokenModel>(
   "TokenModel",
   {
     id: {
       type: DataTypes.UUID,
-      defaultValue: () => uuidv4(),
+      defaultValue: () => uuidv7(),
       allowNull: false,
       primaryKey: true,
     },
@@ -47,7 +47,7 @@ const TokenModel = Db.define<ITokenModel>(
   },
   {
     timestamps: true,
-    tableName: "tokens",
+    tableName: "Tokens",
     createdAt: "createdAt",
     updatedAt: "updatedAt",
   },

@@ -33,7 +33,6 @@ const createBorrowSchema = yup.object({
 
 // Skema validasi untuk memperbarui peminjaman
 const updateBorrowSchema = yup.object({
-  borrowId: requiredString("Borrow ID"),
   quantity: positiveInteger,
   dateReturn: yup
     .date()

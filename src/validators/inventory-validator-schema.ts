@@ -35,7 +35,6 @@ const createInventorySchema = yup.object({
 
 // Skema validasi untuk memperbarui inventaris
 const updateInventorySchema = yup.object({
-  inventoryId: yup.string().trim().required("Inventory ID is required"),
   name: nameValidation,
   quantity: quantityValidation,
   condition: conditionValidation,

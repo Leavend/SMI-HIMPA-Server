@@ -71,7 +71,8 @@ class ReturnController {
   }
 
   async updateReturn(req: Request, res: Response) {
-    const { returnId, quantity, dateReturn, fineAmount, lateDays } = req.body;
+    const { id: returnId } = req.params;
+    const { quantity, dateBorrow, dateReturn, lateDays } = req.body;
     const returnExists = await this.returnService.getReturnByField({
       returnId,
     });
@@ -83,7 +84,7 @@ class ReturnController {
       );
     }
 
-    const updateData = { quantity, dateReturn, fineAmount, lateDays };
+    const updateData = { quantity, dateBorrow, dateReturn, lateDays };
     await this.returnService.updateReturnRecord({ returnId }, updateData);
     return Utility.handleSuccess(
       res,
@@ -94,7 +95,7 @@ class ReturnController {
   }
 
   async deleteReturn(req: Request, res: Response) {
-    const { returnId } = req.params;
+    const { id: returnId } = req.params;
     const returnExists = await this.returnService.getReturnByField({
       returnId,
     });
