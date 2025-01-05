@@ -12,8 +12,8 @@ const requiredString = (field: string) =>
 const statusValidation = yup
   .string()
   .oneOf(
-    ["pending", "approved", "returned"],
-    "Status must be either 'pending', 'approved', or 'returned'",
+    ["PENDING", "REJECTED", "RETURNED"],
+    "Status must be either 'pending', 'rejected', or 'returned'",
   );
 
 // Skema validasi untuk membuat peminjaman
@@ -34,11 +34,7 @@ const createBorrowSchema = yup.object({
 // Skema validasi untuk memperbarui peminjaman
 const updateBorrowSchema = yup.object({
   quantity: positiveInteger,
-  dateReturn: yup
-    .date()
-    .min(yup.ref("dateBorrow"), "Return date cannot be before borrow date")
-    .nullable(),
-  status: statusValidation.nullable(),
+  status: statusValidation.trim(),
 });
 
 // Skema validasi untuk mencari peminjaman

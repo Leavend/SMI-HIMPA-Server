@@ -15,7 +15,7 @@ export interface IBorrow {
 // Interface untuk query saat mencari Borrow
 export interface IFindBorrowQuery {
   where: {
-    [key: string]: string | number;
+    [key: string]: string | number | Date | null;
   };
   order?: any;
   raw?: boolean;
@@ -28,7 +28,7 @@ export interface IBorrowCreationBody
     IBorrow,
     "borrowId" | "createdAt" | "updatedAt" | "dateReturn"
   > {}
-
+  
 // Interface model Sequelize yang menggabungkan IBorrow dan metode Sequelize Model
 export interface IBorrowModel
   extends Model<IBorrow, IBorrowCreationBody>,

@@ -147,6 +147,13 @@ class BorrowController {
   async findAllBorrows(req: Request, res: Response) {
     try {
       const borrows = await this.borrowService.getAllBorrows();
+      if (!borrows || borrows.length === 0) {
+        return Utility.handleError(
+          res,
+          "No borrow records found",
+          ResponseCode.NOT_FOUND,
+        );
+      }
       return Utility.handleSuccess(
         res,
         "Borrow records fetched successfully",
@@ -165,7 +172,7 @@ class BorrowController {
   // Fetch all borrow records by user ID
   async getBorrowsByUser(req: Request, res: Response) {
     try {
-      const { userId } = req.params;
+      const { id: userId } = req.params;
 
       const user = await this.userService.getUserByField({ userId });
       if (!user) {
@@ -202,11 +209,11 @@ class BorrowController {
     }
   }
 
-  // Update a specific borrow record
+  // Update a specific borrow record with borrow ID & update data quantity, dateReturn, status from req.body
   async updateBorrow(req: Request, res: Response) {
     try {
       const { id: borrowId } = req.params;
-      const { quantity, dateReturn } = req.body;
+      const { quantity, dateReturn, status } = req.body;
 
       const borrowExists = await this.borrowService.getBorrowByField({
         borrowId,
@@ -219,12 +226,30 @@ class BorrowController {
         );
       }
 
-      const updateData = { quantity, dateReturn };
-      await this.borrowService.updateBorrowRecord({ borrowId }, updateData);
+      const borrowDetailExists = await this.borrowDetailService.getBorrowDetailByField(
+        { borrowId },
+      );
+      if (!borrowDetailExists) {
+        return Utility.handleError(
+          res,
+          "Borrow detail record not found",
+          ResponseCode.NOT_FOUND,
+        );
+      }
+
+      const updatedBorrow = await this.borrowService.updateBorrowRecord(
+        { borrowId },
+        { quantity, dateReturn },
+      );
+      const updatedBorrowDetail = await this.borrowDetailService.updateBorrowDetailRecord(
+        { borrowId },
+        { status },
+      );
+
       return Utility.handleSuccess(
         res,
         "Borrow record updated successfully",
-        { borrowId, updatedFields: updateData },
+        { updatedBorrow, updatedBorrowDetail },
         ResponseCode.SUCCESS,
       );
     } catch (error) {

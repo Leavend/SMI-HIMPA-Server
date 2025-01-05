@@ -321,11 +321,12 @@ class UserController {
       const { id } = req.params;
       const userAdmin = await this.userService.getUserByField({
         userId: Utility.escapeHtml(id),
+        role: UserRoles.ADMIN,
       });
       if (!userAdmin) {
         return Utility.handleError(
           res,
-          "Account does not exist",
+          "Account does not Admin exist",
           ResponseCode.NOT_FOUND,
         );
       }

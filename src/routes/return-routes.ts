@@ -17,7 +17,7 @@ const createReturnRoute = (): Router => {
 
   // Fetch all returns by User ID
   router.get(
-    "returns/:id",
+    "/returns/:id",
     Auth(),
     asyncHandler(returnController.findReturnsByUser.bind(returnController)),
   );

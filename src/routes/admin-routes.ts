@@ -77,7 +77,7 @@ const createAdminRoute = () => {
     "/borrow/:id",
     asyncHandler(borrowController.deleteBorrow.bind(borrowController)),
   );
-  router.put(
+  router.patch(
     "/borrow/confirmation-borrow",
     AdminAuth(),
     validator(BorrowValidationSchema.approveDeclineBorrowSchema),

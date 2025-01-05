@@ -20,7 +20,11 @@ class BorrowService {
 
   // Get a single borrow record by specific fields
   async getBorrowByField(record: Partial<IBorrow>): Promise<IBorrow | null> {
-    const query = { where: { ...record }, raw: true } as IFindBorrowQuery;
+    const query: IFindBorrowQuery = {
+      where: { ...record },
+      raw: true,
+      returning: false,
+    };
     return this.borrowDataSource.fetchOne(query);
   }
 

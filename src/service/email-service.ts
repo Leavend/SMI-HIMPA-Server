@@ -48,7 +48,7 @@ class EmailService {
     code: string,
   ): Promise<void> {
     const subject = "Forgot Password";
-    const message = `Your email verification code is <b>${code}</b>`;
+    const message = `Your reset password code is <b>${code}</b>`;
     await this.sendMail(user, to, subject, message);
   }
 

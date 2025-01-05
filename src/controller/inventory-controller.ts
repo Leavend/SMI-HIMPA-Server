@@ -78,14 +78,15 @@ class InventoryController {
         );
       }
 
-      await this.inventoryService.updateInventoryRecord(
+      const inventoryModify = await this.inventoryService.updateInventoryRecord(
         { inventoryId: req.params.id },
         req.body,
       );
+      console.log(inventoryModify);
       return Utility.handleSuccess(
         res,
         "Inventory item updated successfully",
-        {},
+        { inventoryModify },
         ResponseCode.SUCCESS,
       );
     } catch (error) {

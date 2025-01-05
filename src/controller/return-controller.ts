@@ -17,6 +17,13 @@ class ReturnController {
 
   async findAllReturns(req: Request, res: Response) {
     const returns = await this.returnService.getAllReturns();
+    if (!returns || returns.length === 0) {
+      return Utility.handleError(
+        res,
+        "No returns records found",
+        ResponseCode.NOT_FOUND,
+      );
+    }
     return Utility.handleSuccess(
       res,
       "Return records fetched successfully",
@@ -26,7 +33,7 @@ class ReturnController {
   }
 
   async findReturnsByUser(req: Request, res: Response) {
-    const { userId } = req.params;
+    const { id: userId } = req.params;
 
     const user = await this.userService.getUserByField({ userId });
     if (!user) {

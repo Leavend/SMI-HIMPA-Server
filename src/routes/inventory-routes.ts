@@ -16,7 +16,6 @@ const createInventoryRoute = () => {
   // Fetch all Inventories route
   router.get(
     "/inventories",
-    Auth(),
     asyncHandler(
       inventoryController.fetchAllInventory.bind(inventoryController),
     ),
