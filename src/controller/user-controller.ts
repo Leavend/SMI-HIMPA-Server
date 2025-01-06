@@ -37,7 +37,9 @@ class UserController {
         );
       }
 
-      const existingUsername = await this.userService.getUserByField({ username });
+      const existingUsername = await this.userService.getUserByField({
+        username,
+      });
       if (existingUsername) {
         return Utility.handleError(
           res,
@@ -46,7 +48,9 @@ class UserController {
         );
       }
 
-      const existingNumber = await this.userService.getUserByField({ number: formattedNumber });
+      const existingNumber = await this.userService.getUserByField({
+        number: formattedNumber,
+      });
       if (existingNumber) {
         return Utility.handleError(
           res,

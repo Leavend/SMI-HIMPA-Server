@@ -121,7 +121,7 @@ class BorrowController {
   ) {
     try {
       await WhatsAppService.sendBorrowMessageToUser(
-        user.username,
+        user,
         user.number,
         item.name,
         params.dateBorrow,
@@ -136,8 +136,8 @@ class BorrowController {
 
     try {
       await WhatsAppService.sendBorrowMessageToAdmin(
-        user.username,
-        admin.username,
+        user,
+        admin,
         admin.number,
         item.name,
         params.dateBorrow,
