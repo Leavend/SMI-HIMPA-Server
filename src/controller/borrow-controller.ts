@@ -7,7 +7,6 @@ import UserService from "../service/user-service";
 import WhatsAppService from "../service/whatsapp-service";
 import Utility from "../utils/index.utils";
 import { ResponseCode } from "../interface/enum/code-enum";
-import Permissions from "../permission";
 import { BorrowStatus } from "../interface/enum/borrow-enum";
 import InventoryService from "../service/inventory-service";
 import ReturnService from "../service/return-service";
@@ -22,7 +21,6 @@ class BorrowController {
     private returnService: ReturnService,
   ) {}
 
-  // Create a new borrow record
   async createBorrow(req: Request, res: Response) {
     const transaction = await this.borrowService.startTransaction();
     try {
@@ -144,7 +142,7 @@ class BorrowController {
   }
 
   // Fetch all borrow records
-  async findAllBorrows(req: Request, res: Response) {
+  async findAllBorrows(_req: Request, res: Response) {
     try {
       const borrows = await this.borrowService.getAllBorrows();
       if (!borrows || borrows.length === 0) {
@@ -212,23 +210,23 @@ class BorrowController {
   // Update a specific borrow record with borrow ID & update data quantity, dateReturn, status from req.body
   async updateBorrow(req: Request, res: Response) {
     try {
-      const { id: borrowId } = req.params;
-      const { quantity, dateReturn, status } = req.body;
+      const borrowId = req.params.id;
 
-      const borrowExists = await this.borrowService.getBorrowByField({
-        borrowId,
-      });
-      if (!borrowExists) {
+      const [borrow, borrowDetail] = await Promise.all([
+        this.borrowService.getBorrowByField({ borrowId }),
+        this.borrowDetailService.getBorrowDetailByField({ borrowId }),
+      ]);
+
+      if (!borrow || !borrowDetail) {
         return Utility.handleError(
           res,
-          "Borrow record not found",
+          "No borrow records found.",
           ResponseCode.NOT_FOUND,
         );
       }
 
-      const borrowDetailExists = await this.borrowDetailService.getBorrowDetailByField(
-        { borrowId },
-      );
+      const borrowDetailExists =
+        await this.borrowDetailService.getBorrowDetailByField({ borrowId });
       if (!borrowDetailExists) {
         return Utility.handleError(
           res,
@@ -239,12 +237,14 @@ class BorrowController {
 
       const updatedBorrow = await this.borrowService.updateBorrowRecord(
         { borrowId },
-        { quantity, dateReturn },
+        req.body,
       );
-      const updatedBorrowDetail = await this.borrowDetailService.updateBorrowDetailRecord(
-        { borrowId },
-        { status },
-      );
+
+      const updatedBorrowDetail =
+        await this.borrowDetailService.updateBorrowDetailRecord(
+          { borrowId },
+          req.body,
+        );
 
       return Utility.handleSuccess(
         res,
@@ -255,7 +255,7 @@ class BorrowController {
     } catch (error) {
       return Utility.handleError(
         res,
-        (error as TypeError).message,
+        (error as Error).message,
         ResponseCode.SERVER_ERROR,
       );
     }
@@ -305,7 +305,6 @@ class BorrowController {
   async approveOrDeclineBorrow(req: Request, res: Response) {
     try {
       const { borrowId, status } = req.body;
-      const admin = req.body.user;
 
       const [borrow, borrowDetail] = await Promise.all([
         this.borrowService.getBorrowByField({ borrowId }),

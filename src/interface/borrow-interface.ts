@@ -24,11 +24,8 @@ export interface IFindBorrowQuery {
 
 // Interface untuk data yang diperlukan dalam pembuatan Borrow
 export interface IBorrowCreationBody
-  extends Optional<
-    IBorrow,
-    "borrowId" | "createdAt" | "updatedAt" | "dateReturn"
-  > {}
-  
+  extends Optional<IBorrow, "borrowId" | "createdAt" | "updatedAt"> {}
+
 // Interface model Sequelize yang menggabungkan IBorrow dan metode Sequelize Model
 export interface IBorrowModel
   extends Model<IBorrow, IBorrowCreationBody>,
@@ -41,7 +38,4 @@ export interface IBorrowDataSource {
   create(record: IBorrowCreationBody): Promise<IBorrow>;
   updateOne(searchBy: IFindBorrowQuery, data: Partial<IBorrow>): Promise<void>;
   deleteOne(query: IFindBorrowQuery): Promise<void>;
-  // getBorrowByField(field: {
-  //   [key: string]: string | number;
-  // }): Promise<IBorrow[] | null>; // New method
 }

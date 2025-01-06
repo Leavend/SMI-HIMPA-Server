@@ -58,8 +58,13 @@ class BorrowService {
     searchBy: Partial<IBorrow>,
     record: Partial<IBorrow>,
   ): Promise<void> {
-    const query = { where: { ...searchBy } } as IFindBorrowQuery;
-    await this.borrowDataSource.updateOne(query, record);
+    try {
+      const query = { where: { ...searchBy } } as IFindBorrowQuery;
+      await this.borrowDataSource.updateOne(query, record);
+    } catch (error) {
+      console.error("Error updating borrow record:", error);
+      throw error;
+    }
   }
 
   // Delete a single borrow record

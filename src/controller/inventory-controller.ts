@@ -67,9 +67,13 @@ class InventoryController {
   // Update an inventory item
   async modifyInventory(req: Request, res: Response) {
     try {
+      // Get the inventory ID and escape any HTML in it
+      const inventoryId = Utility.escapeHtml(req.params.id);
+      // Check if the inventory item exists
       const inventoryExists = await this.inventoryService.getInventoryByField({
-        inventoryId: req.params.id,
+        inventoryId,
       });
+      // If no inventory item is found, return an error response
       if (!inventoryExists) {
         return Utility.handleError(
           res,
@@ -78,11 +82,22 @@ class InventoryController {
         );
       }
 
+      // Check if the request body has necessary fields for update
+      if (!req.body || !Object.keys(req.body).length) {
+        return Utility.handleError(
+          res,
+          "Request body is empty or invalid",
+          ResponseCode.BAD_REQUEST,
+        );
+      }
+
+      // Update the inventory record with the provided data
       const inventoryModify = await this.inventoryService.updateInventoryRecord(
-        { inventoryId: req.params.id },
+        { inventoryId },
         req.body,
       );
-      console.log(inventoryModify);
+
+      // Return success response after the update
       return Utility.handleSuccess(
         res,
         "Inventory item updated successfully",
@@ -90,9 +105,11 @@ class InventoryController {
         ResponseCode.SUCCESS,
       );
     } catch (error) {
+      // Improved error handling
+      console.error("Error modifying inventory:", error);
       return Utility.handleError(
         res,
-        (error as TypeError).message,
+        "An unexpected error occurred",
         ResponseCode.SERVER_ERROR,
       );
     }

@@ -27,12 +27,12 @@ class BorrowDataSource implements IBorrowDataSource {
     searchBy: IFindBorrowQuery,
     data: Partial<IBorrow>,
   ): Promise<void> {
-    await BorrowModel.update(data, { where: searchBy as any });
+    await BorrowModel.update(data, searchBy);
   }
 
   // Delete a single borrow record based on search criteria
   async deleteOne(query: IFindBorrowQuery): Promise<void> {
-    await BorrowModel.destroy({ where: query as any });
+    await BorrowModel.destroy(query);
   }
 
   // Implement transaction
