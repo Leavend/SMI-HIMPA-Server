@@ -10,6 +10,7 @@ import { ResponseCode } from "../interface/enum/code-enum";
 import { BorrowStatus } from "../interface/enum/borrow-enum";
 import InventoryService from "../service/inventory-service";
 import ReturnService from "../service/return-service";
+import { InventoryStatus } from "../interface/enum/inventory-enum";
 
 @autoInjectable()
 class BorrowController {
@@ -29,10 +30,19 @@ class BorrowController {
       const item = await this.inventoryService.getInventoryByField({
         inventoryId: params.inventoryId,
       });
+      // Check if item exists and quantity is sufficient
       if (!item || item.quantity < params.quantity) {
         return Utility.handleError(
           res,
           "Item not found or insufficient quantity in inventory.",
+          ResponseCode.BAD_REQUEST,
+        );
+      }
+      // Check if item status AVAILABLE
+      if (item.condition !== InventoryStatus.AVAILABLE) {
+        return Utility.handleError(
+          res,
+          "Item is not available for borrowing.",
           ResponseCode.BAD_REQUEST,
         );
       }

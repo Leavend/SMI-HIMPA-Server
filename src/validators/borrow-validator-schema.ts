@@ -21,14 +21,14 @@ const createBorrowSchema = yup.object({
   quantity: positiveInteger.required("Quantity is required"),
   dateBorrow: yup
     .date()
-    .max(new Date(), "Borrow date cannot be in the future")
+    .min(new Date(), "Borrow date cannot be in the past") // Memastikan tanggal minimal adalah hari ini
     .required("Borrow date is required"),
   dateReturn: yup
     .date()
-    .min(yup.ref("dateBorrow"), "Return date cannot be before borrow date")
+    .min(yup.ref("dateBorrow"), "Return date cannot be before borrow date") // Memastikan tanggal kembali setelah tanggal pinjam
     .nullable(), // Optional, jika belum dikembalikan
   userId: requiredString("User ID"),
-  adminId: yup.string().trim().nullable(), // Optional, jika admin belum menetapkan pengembalian
+  adminId: yup.string().trim().nullable(), // Optional, jika admin belum mengatur pengembalian
 });
 
 // Skema validasi untuk memperbarui peminjaman

@@ -28,22 +28,29 @@ class UserController {
 
       const formattedNumber = Utility.formatPhoneNumberToWhatsApp(number);
 
-      const existingUser = await this.userService.getUserByField({
-        email,
-        number: formattedNumber,
-        username,
-      });
-
-      if (existingUser) {
-        const errorField =
-          existingUser.email === email
-            ? "Email"
-            : existingUser.number === formattedNumber
-              ? "Number"
-              : "Username";
+      const existingEmail = await this.userService.getUserByField({ email });
+      if (existingEmail) {
         return Utility.handleError(
           res,
-          `${errorField} already exists`,
+          "Email already exists",
+          ResponseCode.ALREADY_EXIST,
+        );
+      }
+
+      const existingUsername = await this.userService.getUserByField({ username });
+      if (existingUsername) {
+        return Utility.handleError(
+          res,
+          "Username already exists",
+          ResponseCode.ALREADY_EXIST,
+        );
+      }
+
+      const existingNumber = await this.userService.getUserByField({ number: formattedNumber });
+      if (existingNumber) {
+        return Utility.handleError(
+          res,
+          "Number already exists",
           ResponseCode.ALREADY_EXIST,
         );
       }
