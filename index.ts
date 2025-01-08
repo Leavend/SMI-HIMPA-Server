@@ -3,6 +3,7 @@ import express, { Request, Response, Express, NextFunction } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import DbInitialize from "./src/database/init";
+import DashboardRouter from "./src/routes/dashboard-routes";
 import UserRouter from "./src/routes/user-routes";
 import BorrowRouter from "./src/routes/borrow-routes";
 import InventoryRouter from "./src/routes/inventory-routes";
@@ -42,6 +43,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction): void => {
 });
 
 // Define routes
+app.use("/api/", DashboardRouter);
 app.use("/api/user", UserRouter);
 app.use("/api/borrow", BorrowRouter);
 app.use("/api/inventory", InventoryRouter);
