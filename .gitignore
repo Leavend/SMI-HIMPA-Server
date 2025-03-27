@@ -16,7 +16,7 @@ dist
 logs
 
 # Dependency directories
-tsconfig.json
+# tsconfig.json
 
 # OS generated files
 .DS_Store

@@ -5,11 +5,12 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/index.js",
-    "build": "tsc",
-    "dev": "NODE_ENV=local tsc -w & nodemon dist/index.js",
-    "start:prod": "NODE_ENV=production ts-node index.ts",
-    "start:dev": "NODE_ENV=development ts-node-dev --respawn index.ts",
-    "start:local": "NODE_ENV=local ts-node-dev --respawn index.ts",
+    "build": "tsc && npm run copy-templates",
+    "copy-templates": "cp -r src/templates dist/src/templates/",
+    "dev": "ts-node-dev --respawn index.ts",
+    "start:prod": "ts-node index.ts",
+    "start:dev": "ts-node-dev --respawn index.ts",
+    "start:local": "ts-node-dev --respawn index.ts",
     "format": "prettier --write 'src/**/*.{ts,tsx,js,jsx,json,md}'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

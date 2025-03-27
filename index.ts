@@ -13,8 +13,10 @@ import { Client, LocalAuth } from "whatsapp-web.js";
 import qrcode from "qrcode-terminal";
 
 // Load environment variables
-const envFile = process.env.NODE_ENV === 'local' ? '.env.local' : process.env.NODE_ENV === 'development' ? '.env.dev' : '.env.local';
-dotenv.config({ path: envFile });
+// const envFile = process.env.NODE_ENV === 'local' ? '.env.local' : process.env.NODE_ENV === 'development' ? '.env.dev' : '.env.local';
+// dotenv.config({ path: envFile });
+
+dotenv.config({ path: ".env" })
 
 // Export client for use in other services or controllers
 export const whatsappClient = new Client({
