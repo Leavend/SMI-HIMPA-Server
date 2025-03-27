@@ -12,30 +12,33 @@ import ReturnRouter from "./src/routes/return-routes";
 import { Client, LocalAuth } from "whatsapp-web.js";
 import qrcode from "qrcode-terminal";
 
-// Load environment variables
-// const envFile = process.env.NODE_ENV === 'local' ? '.env.local' : process.env.NODE_ENV === 'development' ? '.env.dev' : '.env.local';
-// dotenv.config({ path: envFile });
-
-dotenv.config({ path: ".env" })
+dotenv.config({ path: ".env" });
 
 // Export client for use in other services or controllers
 export const whatsappClient = new Client({
   authStrategy: new LocalAuth(),
+  puppeteer: {
+    headless: true,
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-extensions",
+    ],
+  },
 });
 
-// Create an Express app
 const app: Express = express();
 
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "*", // Specify allowed origins
+    origin: process.env.CORS_ORIGIN || "*",
   })
 );
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Global error handler
 app.use((err: any, req: Request, res: Response, next: NextFunction): void => {
   if (err) {
     res.status(500).json({ status: false, message: err.message });
@@ -44,7 +47,6 @@ app.use((err: any, req: Request, res: Response, next: NextFunction): void => {
   }
 });
 
-// Define routes
 app.use("/api/", DashboardRouter);
 app.use("/api/user", UserRouter);
 app.use("/api/borrow", BorrowRouter);
@@ -81,13 +83,8 @@ const initializeWhatsAppClient = () => {
 
 const Bootstrap = async () => {
   try {
-    // Initialize database connection
     await DbInitialize();
-
-    // Initialize WhatsApp client
     initializeWhatsAppClient();
-
-    // Start Express server
     app.listen(PORT, () => {
       console.log("Express server is running on port", PORT);
       console.log("Connection has been established successfully.");
@@ -97,5 +94,4 @@ const Bootstrap = async () => {
   }
 };
 
-// Run the Bootstrap function
 Bootstrap();
