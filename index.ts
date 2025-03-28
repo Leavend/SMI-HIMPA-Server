@@ -15,17 +15,16 @@ import qrcode from "qrcode-terminal";
 dotenv.config({ path: ".env" });
 
 // Export client for use in other services or controllers
-const whatsappClient = new Client({
+export const whatsappClient = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
     headless: true,
     args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-extensions',
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-extensions",
     ],
-    executablePath: '/usr/bin/chromium-browser', // Coba lokasi ini
   },
 });
 
