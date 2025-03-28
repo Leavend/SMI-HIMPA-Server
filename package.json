@@ -7,6 +7,7 @@
     "start": "node dist/index.js",
     "build": "tsc && npm run copy-templates",
     "copy-templates": "cp -r src/templates dist/src/templates/",
+    "postinstall": "apt-get update && apt-get install -y chromium",
     "dev": "ts-node-dev --respawn index.ts",
     "start:prod": "ts-node index.ts",
     "start:dev": "ts-node-dev --respawn index.ts",
