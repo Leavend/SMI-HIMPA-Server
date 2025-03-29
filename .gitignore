@@ -6,9 +6,8 @@ node_modules
 .wwebjs_cache
 
 # Environment variables
-.env.local
 .env
-
+.env.local
 
 # Build output
 dist
@@ -22,7 +21,7 @@ logs
 # OS generated files
 .DS_Store
 Thumbs.db
-s
+
 # IDE specific files
 .vscode/
 .idea/
