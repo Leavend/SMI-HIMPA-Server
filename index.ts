@@ -10,15 +10,17 @@ import InventoryRouter from "./src/routes/inventory-routes";
 import AdminRouter from "./src/routes/admin-routes";
 import ReturnRouter from "./src/routes/return-routes";
 import { Client, LocalAuth } from "whatsapp-web.js";
-import qrcode from "qrcode-terminal";
+import qrcode from "qrcode";
+import fs from "fs";
+import path from "path";
 
 dotenv.config({ path: ".env" });
 
-// Export client for use in other services or controllers
 export const whatsappClient = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
     headless: true,
+    executablePath: "/usr/bin/chromium-browser", // Railway tidak menyediakan default Chromium
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -60,10 +62,26 @@ app.get("/", (req: Request, res: Response) => {
 
 const PORT = process.env.PORT || 4300;
 
+// Simpan QR Code ke dalam file agar bisa diakses oleh client
+const saveQRCode = async (qr: string) => {
+  const qrPath = path.join(__dirname, "qrcode.png");
+  await qrcode.toFile(qrPath, qr);
+};
+
+// Endpoint untuk mendapatkan QR Code
+app.get("/qrcode", (req: Request, res: Response) => {
+  const qrPath = path.join(__dirname, "qrcode.png");
+  if (fs.existsSync(qrPath)) {
+    res.sendFile(qrPath);
+  } else {
+    res.status(404).json({ message: "QR Code belum dibuat" });
+  }
+});
+
 const initializeWhatsAppClient = () => {
-  whatsappClient.on("qr", (qr) => {
-    qrcode.generate(qr, { small: true });
-    console.log("Scan the QR code to authenticate with WhatsApp.");
+  whatsappClient.on("qr", async (qr) => {
+    await saveQRCode(qr);
+    console.log("Scan the QR code by accessing /qrcode endpoint.");
   });
 
   whatsappClient.on("ready", () => {
