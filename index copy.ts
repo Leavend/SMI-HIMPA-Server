@@ -20,6 +20,7 @@ export const whatsappClient = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
     headless: true,
+    executablePath: "/usr/bin/chromium-browser", // Railway tidak menyediakan default Chromium
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
