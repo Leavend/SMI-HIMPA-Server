@@ -17,6 +17,7 @@ logs
 
 # Dependency directories
 # tsconfig.json
+.devcontainer
 
 # OS generated files
 .DS_Store

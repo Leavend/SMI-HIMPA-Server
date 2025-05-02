@@ -11,19 +11,23 @@ class BorrowDetailService {
   constructor(private borrowDetailDataSource: BorrowDetailDataSource) {}
 
   // Mendapatkan satu record BorrowDetail berdasarkan field tertentu
-  async getBorrowDetailByField(
-    record: Partial<IBorrowDetail>,
-  ): Promise<IBorrowDetail | null> {
-    try {
-      const query = {
-        where: { ...record },
-        raw: true,
-      } as IFindBorrowDetailQuery;
-      return await this.borrowDetailDataSource.fetchOne(query);
-    } catch (error) {
-      console.error("Error fetching borrow detail by field:", error);
-      throw error;
-    }
+  async getBorrowDetailsByField(record: Partial<IBorrowDetail>) {
+    const { borrowId, inventoryId, status, ...rest } = record;
+
+    const mappedRecord: Record<string, any> = {
+      ...rest,
+      ...(borrowId ? { borrow_id: borrowId } : {}),
+      ...(inventoryId ? { inventory_id: inventoryId } : {}),
+      ...(status ? { status: status.toLowerCase() } : {}),
+    };
+
+    const query: IFindBorrowDetailQuery = {
+      where: mappedRecord,
+      raw: true,
+      returning: true,
+    };
+
+    return await this.borrowDetailDataSource.fetchAll(query);
   }
 
   // Mendapatkan semua record BorrowDetail

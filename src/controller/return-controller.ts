@@ -5,7 +5,6 @@ import UserService from "../service/user-service";
 import BorrowService from "../service/borrow-service";
 import Utility from "../utils/index.utils";
 import { ResponseCode } from "../interface/enum/code-enum";
-import { IReturn } from "../interface/return-interface";
 
 @autoInjectable()
 class ReturnController {
@@ -35,46 +34,87 @@ class ReturnController {
   async findReturnsByUser(req: Request, res: Response) {
     const { id: userId } = req.params;
 
-    const user = await this.userService.getUserByField({ userId });
-    if (!user) {
-      return Utility.handleError(res, "User not found", ResponseCode.NOT_FOUND);
-    }
+    try {
+      const user = await this.userService.getUserByField({ userId });
+      if (!user) {
+        return Utility.handleError(
+          res,
+          "User not found",
+          ResponseCode.NOT_FOUND,
+        );
+      }
 
-    const borrowRecords = await this.borrowService.getBorrowsByFields({
-      userId,
-    });
-    if (!borrowRecords || borrowRecords.length === 0) {
+      // Get returns with details
+      const borrowRecords = await this.borrowService.getBorrowsByFields(
+        { userId },
+        true, // with details
+      );
+
+      if (!borrowRecords || borrowRecords.length === 0) {
+        return Utility.handleError(
+          res,
+          "No borrow records found for this user",
+          ResponseCode.NOT_FOUND,
+        );
+      }
+
+      // Filter only returned items
+      const returnedRecords = borrowRecords.filter(
+        (record) => record.dateReturn !== null,
+      );
+
+      if (returnedRecords.length === 0) {
+        return Utility.handleError(
+          res,
+          "No return records found for this user",
+          ResponseCode.NOT_FOUND,
+        );
+      }
+
+      // Format response
+      const formattedReturns = returnedRecords.map((record) => {
+        // Perbaikan disini - akses inventory.name yang benar
+        const inventoryName =
+          record.borrowDetails?.[0]?.inventory?.name || "N/A";
+
+        return {
+          borrowId: record.borrowId,
+          inventoryName, // Menggunakan variable yang sudah diperbaiki
+          dateBorrow: record.dateBorrow,
+          dateReturn: record.dateReturn,
+          lateDays: this.calculateLateDays(
+            record.dateBorrow,
+            record.dateReturn,
+          ),
+          quantity: record.quantity,
+        };
+      });
+
+      return Utility.handleSuccess(
+        res,
+        "Return records fetched successfully",
+        { returns: formattedReturns },
+        ResponseCode.SUCCESS,
+      );
+    } catch (error) {
+      console.error("Error in findReturnsByUser:", error);
       return Utility.handleError(
         res,
-        "No borrow records found for this user",
-        ResponseCode.NOT_FOUND,
+        (error as Error).message || "Internal server error",
+        ResponseCode.SERVER_ERROR,
       );
     }
+  }
 
-    const borrowIds = borrowRecords.map((borrow: any) => borrow.borrowId);
-    const returnRecords: IReturn[] = await Promise.all(
-      borrowIds.map(
-        async (borrowId) =>
-          await this.returnService.getReturnByField({ borrowId }),
-      ),
-    ).then((records) =>
-      records.filter((record): record is IReturn => record !== null),
-    );
+  // Helper function to calculate late days
+  private calculateLateDays(dateBorrow: Date, dateReturn: Date | null): number {
+    if (!dateReturn) return 0;
 
-    if (returnRecords.length === 0) {
-      return Utility.handleError(
-        res,
-        "No return records found for this user",
-        ResponseCode.NOT_FOUND,
-      );
-    }
+    const expectedReturn = new Date(dateBorrow);
+    expectedReturn.setDate(expectedReturn.getDate() + 7); // Contoh: 7 hari batas peminjaman
 
-    return Utility.handleSuccess(
-      res,
-      "Return records fetched successfully",
-      { returnRecords },
-      ResponseCode.SUCCESS,
-    );
+    const diffTime = dateReturn.getTime() - expectedReturn.getTime();
+    return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
   }
 
   async updateReturn(req: Request, res: Response) {

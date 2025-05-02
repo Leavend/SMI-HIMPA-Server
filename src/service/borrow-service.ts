@@ -4,13 +4,22 @@ import {
   IFindBorrowQuery,
   IBorrow,
   IBorrowCreationBody,
+  IBorrowWithDetails,
+  IBorrowModel,
 } from "../interface/borrow-interface";
+import BorrowDetailModel from "../model/borrowDetail-model";
+import InventoryModel from "../model/inventory-model";
+import UserModel from "../model/user-model";
 import BorrowDataSource from "../datasource/borrow-datasource";
 
 @autoInjectable()
 class BorrowService {
   constructor(
     @inject(BorrowDataSource) private borrowDataSource: BorrowDataSource,
+    @inject("BorrowModel") private borrowModel: IBorrowModel,
+    @inject("BorrowDetailModel") private borrowDetailModel: typeof BorrowDetailModel,
+    @inject("InventoryModel") private inventoryModel: typeof InventoryModel,
+    @inject("UserModel") private userModel: typeof UserModel,
   ) {}
 
   // Start a transaction
@@ -20,8 +29,13 @@ class BorrowService {
 
   // Get a single borrow record by specific fields
   async getBorrowByField(record: Partial<IBorrow>): Promise<IBorrow | null> {
+    const mappedRecord = {
+      ...(record.borrowId ? { borrow_id: record.borrowId } : {}),
+      // tambahkan mapping lain kalau perlu
+    };
+
     const query: IFindBorrowQuery = {
-      where: { ...record },
+      where: mappedRecord,
       raw: true,
       returning: false,
     };
@@ -29,20 +43,69 @@ class BorrowService {
   }
 
   // Get borrow records
-  async getBorrowsByFields(record: Partial<IBorrow>): Promise<IBorrow[]> {
-    const query = { where: { ...record }, raw: true } as IFindBorrowQuery;
-    const result = await this.borrowDataSource.fetchAll(query);
-    return result || [];
+  async getBorrowsByFields(
+    record: Partial<IBorrow>,
+    withDetails: boolean = false,
+  ): Promise<IBorrowWithDetails[]> {
+    const baseQuery: IFindBorrowQuery = {
+      where: { ...record },
+      raw: true,
+      returning: false,
+    };
+
+    if (withDetails) {
+      baseQuery.include = [
+        {
+          model: this.borrowDetailModel,
+          as: "borrowDetails",
+          include: [{
+            model: this.inventoryModel,
+            as: "inventory",
+            attributes: ["name"],
+          }],
+        },
+        {
+          model: this.userModel,
+          as: "user",
+          attributes: ["username"],
+        },
+      ];
+      baseQuery.order = [["dateBorrow", "DESC"]];
+    }
+
+    const result = await this.borrowDataSource.fetchAll(baseQuery);
+    return (result || []) as IBorrowWithDetails[];
   }
 
   // Get all borrow records
-  async getAllBorrows(): Promise<IBorrow[] | null> {
-    const query = {
-      where: {},
+  async getAllBorrows(): Promise<IBorrowWithDetails[] | null> {
+    const query: IFindBorrowQuery = {
+      include: [
+        {
+          model: BorrowDetailModel, // Use injected model
+          as: "borrowDetails",
+          include: [
+            {
+              model: InventoryModel, // Use injected model
+              as: "inventory",
+              attributes: ["name"],
+            },
+          ],
+        },
+        {
+          model: UserModel, // Use injected model
+          as: "user",
+          attributes: ["username"], // Fixed case to match your model
+        },
+      ],
       order: [["dateBorrow", "DESC"]],
-      raw: true,
-    } as IFindBorrowQuery;
-    return this.borrowDataSource.fetchAll(query);
+      where: {},
+      returning: false,
+    };
+
+    return this.borrowDataSource.fetchAll(query) as Promise<
+      IBorrowWithDetails[]
+    >;
   }
 
   // Create a new borrow record

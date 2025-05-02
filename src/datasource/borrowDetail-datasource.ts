@@ -12,29 +12,31 @@ class BorrowDetailDataSource implements IBorrowDetailDataSource {
     return BorrowDetailModel.create(record);
   }
 
-  // Fetch satu record borrow detail berdasarkan kriteria pencarian
+  // Ambil satu borrow detail berdasarkan kriteria
   async fetchOne(query: IFindBorrowDetailQuery): Promise<IBorrowDetail | null> {
     return BorrowDetailModel.findOne(query);
   }
 
-  // Fetch semua record borrow detail berdasarkan kriteria pencarian
+  // Ambil semua borrow detail berdasarkan kriteria
   async fetchAll(
     query: IFindBorrowDetailQuery,
   ): Promise<IBorrowDetail[] | null> {
     return BorrowDetailModel.findAll(query);
   }
 
-  // Update satu record borrow detail berdasarkan kriteria pencarian
+  // Update satu record berdasarkan query
   async updateOne(
-    searchBy: IFindBorrowDetailQuery,
+    query: IFindBorrowDetailQuery,
     data: Partial<IBorrowDetail>,
   ): Promise<void> {
-    return BorrowDetailModel.update(data, searchBy).then(() => {});
+    const { where } = query;
+    await BorrowDetailModel.update(data, { where });
   }
 
-  // Hapus satu record borrow detail berdasarkan kriteria pencarian
+  // Hapus satu record berdasarkan query
   async deleteOne(query: IFindBorrowDetailQuery): Promise<void> {
-    return BorrowDetailModel.destroy(query).then(() => {});
+    const { where } = query;
+    await BorrowDetailModel.destroy({ where });
   }
 }
 

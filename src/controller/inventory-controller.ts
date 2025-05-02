@@ -67,13 +67,11 @@ class InventoryController {
   // Update an inventory item
   async modifyInventory(req: Request, res: Response) {
     try {
-      // Get the inventory ID and escape any HTML in it
       const inventoryId = Utility.escapeHtml(req.params.id);
-      // Check if the inventory item exists
       const inventoryExists = await this.inventoryService.getInventoryByField({
         inventoryId,
       });
-      // If no inventory item is found, return an error response
+
       if (!inventoryExists) {
         return Utility.handleError(
           res,
@@ -82,7 +80,6 @@ class InventoryController {
         );
       }
 
-      // Check if the request body has necessary fields for update
       if (!req.body || !Object.keys(req.body).length) {
         return Utility.handleError(
           res,
@@ -91,13 +88,62 @@ class InventoryController {
         );
       }
 
-      // Update the inventory record with the provided data
+      // Prepare update data with strict validation
+      const updateData = { ...req.body };
+
+      // Enhanced quantity-condition validation
+      if ("quantity" in updateData || "condition" in updateData) {
+        const newQuantity =
+          "quantity" in updateData
+            ? Number(updateData.quantity)
+            : inventoryExists.quantity;
+
+        const requestedCondition =
+          "condition" in updateData
+            ? updateData.condition
+            : inventoryExists.condition;
+
+        // Prevent invalid Out of Stock status
+        if (requestedCondition === "Out of Stock" && newQuantity !== 0) {
+          return Utility.handleError(
+            res,
+            "Cannot set Out of Stock status when quantity is not zero",
+            ResponseCode.BAD_REQUEST,
+          );
+        }
+
+        // Auto-update logic
+        if ("quantity" in updateData) {
+          if (newQuantity <= 0) {
+            updateData.condition = "Out of Stock";
+            updateData.lastStockUpdate = new Date();
+          } else if (
+            inventoryExists.condition === "Out of Stock" &&
+            newQuantity > 0
+          ) {
+            updateData.condition = "Available";
+            updateData.lastStockUpdate = new Date();
+          }
+        }
+      }
+
+      // Final validation before update
+      if (
+        updateData.condition === "Out of Stock" &&
+        (updateData.quantity ?? inventoryExists.quantity) !== 0
+      ) {
+        return Utility.handleError(
+          res,
+          "System detected invalid Out of Stock status. Quantity must be zero.",
+          ResponseCode.BAD_REQUEST,
+        );
+      }
+
       const inventoryModify = await this.inventoryService.updateInventoryRecord(
         { inventoryId },
-        req.body,
+        updateData,
       );
 
-      // Return success response after the update
       return Utility.handleSuccess(
         res,
         "Inventory item updated successfully",
@@ -105,7 +151,6 @@ class InventoryController {
         ResponseCode.SUCCESS,
       );
     } catch (error) {
-      // Improved error handling
       console.error("Error modifying inventory:", error);
       return Utility.handleError(
         res,

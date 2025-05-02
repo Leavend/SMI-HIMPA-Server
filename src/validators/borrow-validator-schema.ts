@@ -50,8 +50,8 @@ const approveDeclineBorrowSchema = yup.object({
   status: yup
     .string()
     .oneOf(
-      ["ACTIVE", "REJECTED"],
-      "Status must be either 'active' or 'rejected'",
+      ["ACTIVE", "REJECTED", "RETURNED"],
+      "Status must be either 'active' or 'rejected' 'returned'",
     )
     .required("Status is required"),
 });

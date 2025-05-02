@@ -6,6 +6,8 @@ import BorrowDetailModel from "../model/borrowDetail-model";
 import ReturnModel from "../model/return-model";
 import Db from "./index";
 
+import "../model/associations";
+
 const models = [
   UserModel,
   BorrowModel,

@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import UserController from "../controller/user-controller";
-import { AdminAuth, validator } from "../middlewares/index.middleware";
+import { Auth, AdminAuth, validator } from "../middlewares/index.middleware";
 import InventoryValidationSchema from "../validators/inventory-validator-schema";
 import BorrowValidationSchema from "../validators/borrow-validator-schema";
 import { container } from "tsyringe";
@@ -29,7 +29,7 @@ const createAdminRoute = () => {
   );
   router.get(
     "/users",
-    AdminAuth(),
+    Auth(),
     asyncHandler(userController.getAllUsersByAdmin.bind(userController)),
   );
   router.get(

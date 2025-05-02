@@ -1,4 +1,6 @@
-import { Optional, Model } from "sequelize";
+import { Optional, Model, IncludeOptions } from "sequelize";
+import { IInventory } from "./inventory-interface";
+import { IUser } from "./user-interface";
 
 // Interface utama untuk entitas Borrow
 export interface IBorrow {
@@ -12,12 +14,20 @@ export interface IBorrow {
   updatedAt: Date;
 }
 
+import { IBorrowDetail } from "./borrowDetail-interface";
+
+export interface IBorrowWithDetails extends IBorrow {
+  borrowDetails?: (IBorrowDetail & {
+    inventory?: IInventory; // Pastikan ini ada
+  })[];
+  user?: IUser;
+}
+
 // Interface untuk query saat mencari Borrow
 export interface IFindBorrowQuery {
-  where: {
-    [key: string]: string | number | Date | null;
-  };
-  order?: any;
+  where: Record<string, unknown>; // This remains for the search condition
+  include?: IncludeOptions[]; // Allow for Sequelize includes
+  order?: any[]; // Define the ordering of records
   raw?: boolean;
   returning: boolean;
 }

@@ -1,43 +1,72 @@
-import { autoInjectable } from "tsyringe";
+import { autoInjectable, inject } from "tsyringe";
 import {
   IFindReturnQuery,
   IReturn,
   IReturnCreationBody,
 } from "../interface/return-interface";
 import ReturnDataSource from "../datasource/return-datasource";
+import BorrowDataSource from "../datasource/borrow-datasource";
+import { IFindBorrowQuery } from "../interface/borrow-interface";
 
 @autoInjectable()
 class ReturnService {
-  private returnDataSource: ReturnDataSource;
+  constructor(
+    @inject(ReturnDataSource) private returnDataSource: ReturnDataSource,
+    @inject(BorrowDataSource) private borrowDataSource: BorrowDataSource,
+  ) {}
 
-  constructor(_returnDataSource: ReturnDataSource) {
-    this.returnDataSource = _returnDataSource;
+  async getReturnsByUser(userId: string, options?: any): Promise<IReturn[]> {
+    const borrowQuery: IFindBorrowQuery = {
+      where: { userId },
+      raw: true,
+      ...options,
+    };
+
+    const borrows = await this.borrowDataSource.fetchAll(borrowQuery);
+    if (!borrows || borrows.length === 0) return [];
+
+    const returnPromises = borrows.map(async (borrow: { borrowId: string }) => {
+      const returnQuery: IFindReturnQuery = {
+        where: { borrowId: borrow.borrowId },
+        raw: true,
+        ...options,
+      };
+      return this.returnDataSource.fetchOne(returnQuery);
+    });
+
+    const returnRecords = await Promise.all(returnPromises);
+    return returnRecords.filter((record): record is IReturn => record !== null);
   }
 
-  // Mendapatkan satu record return berdasarkan field tertentu
   async getReturnByField(record: Partial<IReturn>): Promise<IReturn | null> {
-    const query = { where: { ...record }, raw: true } as IFindReturnQuery;
-    return this.returnDataSource.fetchOne(query);
+    return this.returnDataSource.fetchOne({
+      where: this.sanitizeWhereClause(record),
+      raw: true,
+    });
   }
 
-  // Get return records
+  // Get return records by fields
   async getReturnByFields(record: Partial<IReturn>): Promise<IReturn[]> {
-    const query = { where: { ...record }, raw: true } as IFindReturnQuery;
+    const query: IFindReturnQuery = {
+      where: this.sanitizeWhereClause(record),
+      raw: true,
+    };
     const result = await this.returnDataSource.fetchAll(query);
     return result || [];
   }
 
-  // Mendapatkan semua record return
-  async getAllReturns(): Promise<IReturn[] | null> {
-    const query = {
+  // Get all return records
+  async getAllReturns(): Promise<IReturn[]> {
+    const query: IFindReturnQuery = {
       where: {},
       order: [["dateReturn", "DESC"]],
       raw: true,
-    } as IFindReturnQuery;
-    return this.returnDataSource.fetchAll(query);
+    };
+    const result = await this.returnDataSource.fetchAll(query);
+    return result || [];
   }
 
-  // Membuat record return baru
+  // Create new return record
   async createReturn(
     record: IReturnCreationBody,
     transaction?: any,
@@ -45,19 +74,29 @@ class ReturnService {
     return this.returnDataSource.create(record);
   }
 
-  // Memperbarui satu record return
+  // Update return record
   async updateReturnRecord(
     searchBy: Partial<IReturn>,
     record: Partial<IReturn>,
   ): Promise<void> {
-    const query = { where: { ...searchBy } } as IFindReturnQuery;
+    const query: IFindReturnQuery = {
+      where: this.sanitizeWhereClause(searchBy),
+    };
     await this.returnDataSource.updateOne(query, record);
   }
 
-  // Menghapus satu record return
+  // Delete return record
   async deleteReturn(record: Partial<IReturn>): Promise<void> {
-    const query = { where: { ...record } } as IFindReturnQuery;
+    const query: IFindReturnQuery = {
+      where: this.sanitizeWhereClause(record),
+    };
     await this.returnDataSource.deleteOne(query);
+  }
+
+  private sanitizeWhereClause(record: Partial<IReturn>): Record<string, any> {
+    return Object.fromEntries(
+      Object.entries(record).filter(([_, value]) => value !== undefined)
+    );
   }
 }
 
