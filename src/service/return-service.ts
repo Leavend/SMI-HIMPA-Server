@@ -95,7 +95,7 @@ class ReturnService {
 
   private sanitizeWhereClause(record: Partial<IReturn>): Record<string, any> {
     return Object.fromEntries(
-      Object.entries(record).filter(([_, value]) => value !== undefined)
+      Object.entries(record).filter(([_, value]) => value !== undefined),
     );
   }
 }

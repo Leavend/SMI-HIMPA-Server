@@ -11,51 +11,51 @@ function setupAssociations() {
   UserModel.hasMany(BorrowModel, {
     foreignKey: "user_id",
     as: "borrows",
-    onDelete: "CASCADE"
+    onDelete: "CASCADE",
   });
 
   // Relasi: Borrow belongsTo User
   BorrowModel.belongsTo(UserModel, {
     foreignKey: "user_id",
-    as: "user"
+    as: "user",
   });
 
   // Relasi: Borrow hasMany BorrowDetail
   BorrowModel.hasMany(BorrowDetailModel, {
     foreignKey: "borrow_id",
     as: "borrowDetails",
-    onDelete: "CASCADE"
+    onDelete: "CASCADE",
   });
 
   // Relasi: BorrowDetail belongsTo Borrow
   BorrowDetailModel.belongsTo(BorrowModel, {
     foreignKey: "borrow_id",
-    as: "borrow"
+    as: "borrow",
   });
 
   // Relasi: BorrowDetail belongsTo Inventory
   BorrowDetailModel.belongsTo(InventoryModel, {
     foreignKey: "inventory_id",
-    as: "inventory"
+    as: "inventory",
   });
 
   // Relasi: Inventory hasMany BorrowDetail
   InventoryModel.hasMany(BorrowDetailModel, {
     foreignKey: "inventory_id",
-    as: "borrowDetails"
+    as: "borrowDetails",
   });
 
   // Relasi: Borrow hasMany Return
   BorrowModel.hasMany(ReturnModel, {
     foreignKey: "borrow_id",
     as: "returns",
-    onDelete: "CASCADE"
+    onDelete: "CASCADE",
   });
 
   // Relasi: Return belongsTo Borrow
   ReturnModel.belongsTo(BorrowModel, {
     foreignKey: "borrow_id",
-    as: "borrow"
+    as: "borrow",
   });
 }
 

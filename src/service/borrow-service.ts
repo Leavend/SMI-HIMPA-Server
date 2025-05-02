@@ -17,7 +17,8 @@ class BorrowService {
   constructor(
     @inject(BorrowDataSource) private borrowDataSource: BorrowDataSource,
     @inject("BorrowModel") private borrowModel: IBorrowModel,
-    @inject("BorrowDetailModel") private borrowDetailModel: typeof BorrowDetailModel,
+    @inject("BorrowDetailModel")
+    private borrowDetailModel: typeof BorrowDetailModel,
     @inject("InventoryModel") private inventoryModel: typeof InventoryModel,
     @inject("UserModel") private userModel: typeof UserModel,
   ) {}
@@ -58,11 +59,13 @@ class BorrowService {
         {
           model: this.borrowDetailModel,
           as: "borrowDetails",
-          include: [{
-            model: this.inventoryModel,
-            as: "inventory",
-            attributes: ["name"],
-          }],
+          include: [
+            {
+              model: this.inventoryModel,
+              as: "inventory",
+              attributes: ["name"],
+            },
+          ],
         },
         {
           model: this.userModel,
