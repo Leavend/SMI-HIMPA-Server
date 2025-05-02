@@ -2,6 +2,17 @@ import "reflect-metadata";
 import express, { Request, Response, Express, NextFunction } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import { container } from "tsyringe";
+
+import BorrowModel from "./src/model/borrow-model";
+import BorrowDetailModel from "./src/model/borrowDetail-model";
+import InventoryModel from "./src/model/inventory-model";
+import UserModel from "./src/model/user-model";
+
+container.register("BorrowModel", { useValue: BorrowModel });
+container.register("BorrowDetailModel", { useValue: BorrowDetailModel });
+container.register("InventoryModel", { useValue: InventoryModel });
+container.register("UserModel", { useValue: UserModel });
 import DbInitialize from "./src/database/init";
 import UserRouter from "./src/routes/user-routes";
 import BorrowRouter from "./src/routes/borrow-routes";
