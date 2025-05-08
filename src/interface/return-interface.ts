@@ -1,4 +1,7 @@
 import { Optional, Model } from "sequelize";
+import { IBorrowDetail } from "./borrowDetail-interface";
+import { IInventory } from "./inventory-interface";
+import { IUser } from "./user-interface";
 
 // Interface utama untuk entitas Return
 export interface IReturn {
@@ -10,6 +13,13 @@ export interface IReturn {
   lateDays: number;
   createdAt: Date;
   updatedAt: Date;
+
+  borrow?: {
+    borrowDetails?: (IBorrowDetail & {
+      inventory?: Pick<IInventory, "name">;
+    })[];
+    user?: Pick<IUser, "username">;
+  };
 }
 
 // Interface untuk query saat mencari Return

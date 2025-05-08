@@ -48,10 +48,11 @@ class BorrowService {
     record: Partial<IBorrow>,
     withDetails: boolean = false,
   ): Promise<IBorrowWithDetails[]> {
-    const baseQuery: IFindBorrowQuery = {
+    const baseQuery: any = {  // Gunakan any sementara untuk debugging
       where: { ...record },
-      raw: true,
-      returning: false,
+      // Hapus 'raw: true' untuk mengakses asosiasi
+      raw: false, 
+      nest: true
     };
 
     if (withDetails) {
@@ -59,25 +60,23 @@ class BorrowService {
         {
           model: this.borrowDetailModel,
           as: "borrowDetails",
-          include: [
-            {
-              model: this.inventoryModel,
-              as: "inventory",
-              attributes: ["name"],
-            },
-          ],
+          include: [{
+            model: this.inventoryModel,
+            as: "inventory",
+            attributes: ["name"]
+          }]
         },
         {
           model: this.userModel,
           as: "user",
-          attributes: ["username"],
-        },
+          attributes: ["username"]
+        }
       ];
       baseQuery.order = [["dateBorrow", "DESC"]];
     }
 
     const result = await this.borrowDataSource.fetchAll(baseQuery);
-    return (result || []) as IBorrowWithDetails[];
+    return result as IBorrowWithDetails[];
   }
 
   // Get all borrow records

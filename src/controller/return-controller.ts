@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { autoInjectable } from "tsyringe";
 import ReturnService from "../service/return-service";
 import UserService from "../service/user-service";
-import BorrowService from "../service/borrow-service";
 import Utility from "../utils/index.utils";
 import { ResponseCode } from "../interface/enum/code-enum";
 
@@ -11,7 +10,6 @@ class ReturnController {
   constructor(
     private returnService: ReturnService,
     private userService: UserService,
-    private borrowService: BorrowService,
   ) {}
 
   async findAllReturns(req: Request, res: Response) {
@@ -33,7 +31,7 @@ class ReturnController {
 
   async findReturnsByUser(req: Request, res: Response) {
     const { id: userId } = req.params;
-
+  
     try {
       const user = await this.userService.getUserByField({ userId });
       if (!user) {
@@ -43,53 +41,41 @@ class ReturnController {
           ResponseCode.NOT_FOUND,
         );
       }
-
-      // Get returns with details
-      const borrowRecords = await this.borrowService.getBorrowsByFields(
-        { userId },
-        true, // with details
-      );
-
-      if (!borrowRecords || borrowRecords.length === 0) {
-        return Utility.handleError(
-          res,
-          "No borrow records found for this user",
-          ResponseCode.NOT_FOUND,
-        );
-      }
-
-      // Filter only returned items
-      const returnedRecords = borrowRecords.filter(
-        (record) => record.dateReturn !== null,
-      );
-
-      if (returnedRecords.length === 0) {
+  
+      const returnRecords = await this.returnService.getReturnsByUser(userId);
+      if (!returnRecords || returnRecords.length === 0) {
         return Utility.handleError(
           res,
           "No return records found for this user",
           ResponseCode.NOT_FOUND,
         );
       }
-
-      // Format response
-      const formattedReturns = returnedRecords.map((record) => {
-        // Perbaikan disini - akses inventory.name yang benar
-        const inventoryName =
-          record.borrowDetails?.[0]?.inventory?.name || "N/A";
-
+  
+      const formattedReturns = returnRecords.map((r) => {
         return {
-          borrowId: record.borrowId,
-          inventoryName, // Menggunakan variable yang sudah diperbaiki
-          dateBorrow: record.dateBorrow,
-          dateReturn: record.dateReturn,
-          lateDays: this.calculateLateDays(
-            record.dateBorrow,
-            record.dateReturn,
-          ),
-          quantity: record.quantity,
+          returnId: r.returnId,
+          borrowId: r.borrowId,
+          quantity: r.quantity,
+          dateBorrow: r.dateBorrow,
+          dateReturn: r.dateReturn,
+          lateDays: this.calculateLateDays(r.dateBorrow, r.dateReturn),
+          createdAt: r.createdAt,
+          updatedAt: r.updatedAt,
+  
+          // Relasi nested sesuai schema
+          borrow: {
+            borrowDetails: r.borrow?.borrowDetails?.map((detail) => ({
+              inventory: detail.inventory
+                ? { name: detail.inventory.name }
+                : undefined,
+            })),
+            user: r.borrow?.user
+              ? { Username: r.borrow.user.username }
+              : undefined,
+          },
         };
       });
-
+  
       return Utility.handleSuccess(
         res,
         "Return records fetched successfully",
@@ -105,6 +91,7 @@ class ReturnController {
       );
     }
   }
+  
 
   // Helper function to calculate late days
   private calculateLateDays(dateBorrow: Date, dateReturn: Date | null): number {

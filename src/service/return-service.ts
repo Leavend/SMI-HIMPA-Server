@@ -6,38 +6,56 @@ import {
 } from "../interface/return-interface";
 import ReturnDataSource from "../datasource/return-datasource";
 import BorrowDataSource from "../datasource/borrow-datasource";
-import { IFindBorrowQuery } from "../interface/borrow-interface";
+import ReturnModel from "../model/return-model";
+import BorrowModel from "../model/borrow-model";
+import BorrowDetailModel from "../model/borrowDetail-model";
+import InventoryModel from "../model/inventory-model";
+import UserModel from "../model/user-model";
 
 @autoInjectable()
 class ReturnService {
   constructor(
     @inject(ReturnDataSource) private returnDataSource: ReturnDataSource,
-    @inject(BorrowDataSource) private borrowDataSource: BorrowDataSource,
+    @inject('ReturnModel') private returnModel: typeof ReturnModel,
+    @inject('BorrowModel') private borrowModel: typeof BorrowModel,
+    @inject('BorrowDetailModel') private borrowDetailModel: typeof BorrowDetailModel,
+    @inject('InventoryModel') private inventoryModel: typeof InventoryModel,
+    @inject('UserModel') private userModel: typeof UserModel
   ) {}
 
-  async getReturnsByUser(userId: string, options?: any): Promise<IReturn[]> {
-    const borrowQuery: IFindBorrowQuery = {
-      where: { userId },
-      raw: true,
-      ...options,
-    };
-
-    const borrows = await this.borrowDataSource.fetchAll(borrowQuery);
-    if (!borrows || borrows.length === 0) return [];
-
-    const returnPromises = borrows.map(async (borrow: { borrowId: string }) => {
-      const returnQuery: IFindReturnQuery = {
-        where: { borrowId: borrow.borrowId },
-        raw: true,
-        ...options,
-      };
-      return this.returnDataSource.fetchOne(returnQuery);
+  async getReturnsByUser(userId: string): Promise<IReturn[]> {
+    return this.returnModel.findAll({
+      include: [
+        {
+          model: this.borrowModel,
+          as: 'borrow', // Alias untuk BorrowModel
+          where: { userId },
+          required: true,
+          include: [
+            {
+              model: this.borrowDetailModel,
+              as: 'borrowDetails', // Alias untuk BorrowDetailModel
+              include: [
+                {
+                  model: this.inventoryModel,
+                  as: 'inventory', // Alias untuk InventoryModel
+                  attributes: ['name'],
+                },
+              ],
+            },
+            {
+              model: this.userModel,
+              as: 'user', // Alias untuk UserModel
+              attributes: ['Username'],
+            },
+          ],
+        },
+      ],
+      order: [['createdAt', 'DESC']],
     });
-
-    const returnRecords = await Promise.all(returnPromises);
-    return returnRecords.filter((record): record is IReturn => record !== null);
   }
-
+  
+  
   async getReturnByField(record: Partial<IReturn>): Promise<IReturn | null> {
     return this.returnDataSource.fetchOne({
       where: this.sanitizeWhereClause(record),

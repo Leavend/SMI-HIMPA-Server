@@ -21,14 +21,34 @@ const createBorrowSchema = yup.object({
   quantity: positiveInteger.required("Quantity is required"),
   dateBorrow: yup
     .date()
-    .min(new Date(), "Borrow date cannot be in the past") // Memastikan tanggal minimal adalah hari ini
-    .required("Borrow date is required"),
+    .typeError('Harap masukkan tanggal yang valid')
+    .required("Tanggal pinjam harus diisi")
+    .test(
+      'not-past-date',
+      'Tanggal pinjam tidak boleh di masa lalu',
+      (value) => {
+        if (!value) return false;
+        
+        // Bandingkan hanya tanggal (YYYY-MM-DD) tanpa waktu
+        const today = new Date();
+        const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        
+        const inputDate = new Date(value);
+        const inputDateOnly = new Date(inputDate.getFullYear(), inputDate.getMonth(), inputDate.getDate());
+        
+        return inputDateOnly >= todayDate;
+      }
+    ),
   dateReturn: yup
     .date()
-    .min(yup.ref("dateBorrow"), "Return date cannot be before borrow date") // Memastikan tanggal kembali setelah tanggal pinjam
-    .nullable(), // Optional, jika belum dikembalikan
+    .nullable()
+    .min(
+      yup.ref("dateBorrow"), 
+      "Tanggal kembali tidak boleh sebelum tanggal pinjam"
+    )
+    .typeError('Harap masukkan tanggal yang valid'),
   userId: requiredString("User ID"),
-  adminId: yup.string().trim().nullable(), // Optional, jika admin belum mengatur pengembalian
+  adminId: yup.string().trim().nullable(),
 });
 
 // Skema validasi untuk memperbarui peminjaman
