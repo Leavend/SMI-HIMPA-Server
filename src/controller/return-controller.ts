@@ -52,26 +52,51 @@ class ReturnController {
       }
   
       const formattedReturns = returnRecords.map((r) => {
+        let lateDays = 0;
+        
+        // Gunakan status asli dari data untuk logika lateDays
+        const borrowDetailForLogic = r.borrow?.borrowDetails?.[0];
+
+        // Hitung keterlambatan: jika status bukan 'RETURNED' (atau status undefined),
+        // dan tanggal hari ini sudah melewati tanggal pengembalian.
+        if (borrowDetailForLogic && borrowDetailForLogic.status !== 'RETURNED') {
+          const now = new Date();
+          const expectedReturnDate = new Date(r.dateReturn);
+
+          if (now > expectedReturnDate) {
+            const diffTime = now.getTime() - expectedReturnDate.getTime();
+            lateDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          }
+        } else if (!borrowDetailForLogic || borrowDetailForLogic.status === undefined) {
+          // Jika status undefined atau borrowDetail tidak ada, anggap belum kembali untuk perhitungan lateDays
+          const now = new Date();
+          const expectedReturnDate = new Date(r.dateReturn);
+           if (now > expectedReturnDate) {
+            const diffTime = now.getTime() - expectedReturnDate.getTime();
+            lateDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          }
+        }
+
+
         return {
           returnId: r.returnId,
           borrowId: r.borrowId,
           quantity: r.quantity,
           dateBorrow: r.dateBorrow,
           dateReturn: r.dateReturn,
-          lateDays: this.calculateLateDays(r.dateBorrow, r.dateReturn),
+          lateDays: lateDays,
           createdAt: r.createdAt,
           updatedAt: r.updatedAt,
-  
-          // Relasi nested sesuai schema
           borrow: {
             borrowDetails: r.borrow?.borrowDetails?.map((detail) => ({
               inventory: detail.inventory
                 ? { name: detail.inventory.name }
                 : undefined,
+              // --- PERUBAHAN DI SINI ---
+              // Sertakan 'status'. Jika undefined dari sumber, berikan default string.
+              status: detail.status !== undefined ? detail.status : "UNKNOWN", 
             })),
-            user: r.borrow?.user
-              ? { Username: r.borrow.user.username }
-              : undefined,
+            // user: user.username,
           },
         };
       });
@@ -92,18 +117,6 @@ class ReturnController {
     }
   }
   
-
-  // Helper function to calculate late days
-  private calculateLateDays(dateBorrow: Date, dateReturn: Date | null): number {
-    if (!dateReturn) return 0;
-
-    const expectedReturn = new Date(dateBorrow);
-    expectedReturn.setDate(expectedReturn.getDate() + 7); // Contoh: 7 hari batas peminjaman
-
-    const diffTime = dateReturn.getTime() - expectedReturn.getTime();
-    return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-  }
-
   async updateReturn(req: Request, res: Response) {
     const { id: returnId } = req.params;
     const { quantity, dateBorrow, dateReturn, lateDays } = req.body;
