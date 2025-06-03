@@ -48,7 +48,9 @@ class App {
   constructor() {
     this.app = express();
     this.whatsappClient = new Client({
-      authStrategy: new LocalAuth(),
+      authStrategy: new LocalAuth({
+        dataPath: './wwebjs_auth'
+      }),
       puppeteer: {
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
@@ -160,26 +162,31 @@ class App {
 
   private initializeWhatsAppClient(): void {
     this.whatsappClient.on("qr", (qr) => {
+      logger.info("No existing session. Scan the QR code to authenticate WhatsApp.");
       qrcode.generate(qr, { small: true });
-      logger.info("Scan the QR code to authenticate with WhatsApp.");
     });
-
-    this.whatsappClient.on("ready", () => {
-      logger.info("WhatsApp client is ready!");
-    });
-
+  
     this.whatsappClient.on("authenticated", () => {
-      logger.info("WhatsApp client authenticated!");
+      logger.info("WhatsApp authenticated successfully.");
     });
-
+  
+    this.whatsappClient.on("ready", () => {
+      logger.info("WhatsApp client is ready and connected.");
+    });
+  
     this.whatsappClient.on("auth_failure", (msg) => {
-      logger.error("WhatsApp authentication failure:", msg);
+      logger.error("WhatsApp authentication failed. Reason:", msg);
     });
-
+  
+    this.whatsappClient.on("disconnected", (reason) => {
+      logger.warn("WhatsApp client disconnected:", reason);
+    });
+  
     this.whatsappClient.initialize().catch(error => {
-      logger.error("WhatsApp client initialization failed:", error);
+      logger.error("Failed to initialize WhatsApp client:", error);
     });
   }
+  
 
   public async start(): Promise<void> {
     try {
