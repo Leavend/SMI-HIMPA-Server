@@ -1,21 +1,21 @@
 import fs from "fs";
 import path from "path";
-import { whatsappClient } from "../../index";
-import Utility from "../utils/index.utils";
 import { htmlToText } from "html-to-text";
 import moment from "moment";
+import { getInstance } from "../utils/whatsapp-client";
+import Utility from "../utils/index.utils";
 
 const whatsappTemplateCommon = path.join(
   __dirname,
   "..",
-  "templates/whatsapp-common.html",
+  "templates/whatsapp-common.html"
 );
 const templateCommon = fs.readFileSync(whatsappTemplateCommon, "utf8");
 
 const whatsappTemplateBorrow = path.join(
   __dirname,
   "..",
-  "templates/whatsapp-borrow.html",
+  "templates/whatsapp-borrow.html"
 );
 const templateBorrow = fs.readFileSync(whatsappTemplateBorrow, "utf8");
 
@@ -27,22 +27,13 @@ interface User {
 class WhatsAppService {
   private static replacePlaceholders(
     template: string,
-    placeholders: { [key: string]: string },
+    placeholders: { [key: string]: string }
   ): string {
     let result = template;
     for (const [key, value] of Object.entries(placeholders)) {
       result = result.replace(new RegExp(`#${key}#`, "g"), value);
     }
     return result;
-  }
-
-  private static async sendMessageInternal(
-    to: string,
-    textMessage: string,
-  ): Promise<void> {
-    const chatId = Utility.formatPhoneNumberToWhatsApp(to);
-    await whatsappClient.sendMessage(chatId, textMessage);
-    console.log(`Message sent to ${to}`);
   }
 
   private static formatDate(date: string | Date): string {
@@ -54,8 +45,16 @@ class WhatsAppService {
       APP_NAME: process.env.APPNAME || "YourApp",
       SUPPORT_CONTACT: process.env.SUPPORTMAIL || "support@example.com",
       NAME: user.username || "User",
-      PHONE: to.replace(/@c\.us$/, ""),
+      PHONE: to.replace(/@s\.whatsapp\.net$/, ""),
     };
+  }
+
+  private static async sendMessageInternal(to: string, textMessage: string): Promise<void> {
+    const client = await getInstance();
+    const chatId = Utility.formatPhoneNumberToWhatsApp(to); // Should return something like 628xxx@s.whatsapp.net
+
+    await client.sendMessage(chatId, { text: textMessage });
+    console.log(`Message sent to ${to}`);
   }
 
   static async sendBorrowMessageToUser(
@@ -63,7 +62,7 @@ class WhatsAppService {
     to: string,
     itemName: string,
     dateBorrow: string,
-    dueDate: string,
+    dueDate: string
   ) {
     const placeholders = {
       ...this.getCommonPlaceholders(user, to),
@@ -87,7 +86,7 @@ class WhatsAppService {
     itemName: string,
     dateBorrow: string,
     dueDate: string,
-    status: string,
+    status: string
   ) {
     const placeholders = {
       ...this.getCommonPlaceholders(user, to),
@@ -117,7 +116,7 @@ class WhatsAppService {
     to: string,
     itemName: string,
     dateBorrow: string,
-    dueDate: string,
+    dueDate: string
   ) {
     const placeholders = {
       ...this.getCommonPlaceholders(admin, to),
@@ -138,7 +137,7 @@ class WhatsAppService {
     user: User,
     to: string,
     subject: string,
-    message: string,
+    message: string
   ) {
     const placeholders = {
       ...this.getCommonPlaceholders(user, to),

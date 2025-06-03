@@ -19,6 +19,7 @@
     "@sendgrid/mail": "^8.1.0",
     "@types/dotenv-safe": "^8.1.6",
     "@types/express-rate-limit": "^6.0.2",
+    "@whiskeysockets/baileys": "^6.7.18",
     "accesscontrol": "^2.2.1",
     "axios": "^1.7.8",
     "bcryptjs": "^2.4.3",
@@ -42,7 +43,6 @@
     "sequelize": "^6.37.5",
     "tsyringe": "^4.8.0",
     "uuid": "^11.0.3",
-    "whatsapp-web.js": "^1.26.0",
     "winston": "^3.17.0",
     "yup": "^1.5.0"
   },
@@ -63,6 +63,7 @@
     "@types/qrcode-terminal": "^0.12.2",
     "@types/uuid": "^10.0.0",
     "nodemon": "^3.1.9",
+    "pino-pretty": "^13.0.0",
     "prettier": "3.4.2",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
