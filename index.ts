@@ -162,10 +162,10 @@ class App {
 
   private initializeWhatsAppClient(): void {
     this.whatsappClient.on("qr", (qr) => {
-      logger.info("No existing session. Scan the QR code to authenticate WhatsApp.");
+      logger.info("QR code received");
       qrcode.generate(qr, { small: true });
     });
-  
+    
     this.whatsappClient.on("authenticated", () => {
       logger.info("WhatsApp authenticated successfully.");
     });
