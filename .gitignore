@@ -4,6 +4,7 @@ node_modules
 # Build files
 .wwebjs_auth
 .wwebjs_cache
+baileys_auth
 
 # Environment variables
 .env
