@@ -4,7 +4,7 @@ node_modules
 # Build files
 .wwebjs_auth
 .wwebjs_cache
-# bailey_auth
+bailey_auth
 
 # Environment variables
 .env
@@ -15,6 +15,7 @@ dist
 
 # Log files
 logs
+access.log
 
 # Dependency directories
 # tsconfig.json
