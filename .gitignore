@@ -14,6 +14,7 @@ dist
 
 # Log files
 logs
+access.log
 
 # Dependency directories
 # tsconfig.json

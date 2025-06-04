@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ::1 - - [05/May/2025:07:09:23 +0000] "POST /api/user/login HTTP/1.1" 200 563 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
 ::1 - - [05/May/2025:07:10:41 +0000] "GET /api/inventory/inventories HTTP/1.1" 200 - "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
 ::1 - - [05/May/2025:07:10:41 +0000] "GET /api/admin/users HTTP/1.1" 200 - "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
@@ -542,3 +543,10 @@
 36.78.200.20 - - [03/Jun/2025:09:28:52 +0000] "GET /api/admin/users HTTP/1.1" 200 - "https://himpa.nuxt.dev/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
 36.78.200.20 - - [03/Jun/2025:09:31:26 +0000] "GET /api/inventory/inventories HTTP/1.1" 200 - "https://himpa.nuxt.dev/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
 36.78.200.20 - - [03/Jun/2025:09:31:26 +0000] "GET /api/admin/users HTTP/1.1" 200 - "https://himpa.nuxt.dev/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+=======
+140.213.131.41 - - [04/Jun/2025:06:29:31 +0000] "GET /api/return/returns/01965855-4af1-763d-8b97-f9e6ed1a94ed HTTP/1.1" 404 66 "https://smi-himpa-client.nuxt.dev/" "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36"
+140.213.131.41 - - [04/Jun/2025:06:29:32 +0000] "GET /api/return/returns/01965855-4af1-763d-8b97-f9e6ed1a94ed HTTP/1.1" 404 66 "https://smi-himpa-client.nuxt.dev/" "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36"
+140.213.131.41 - - [04/Jun/2025:06:29:36 +0000] "GET /api/inventory/inventories HTTP/1.1" 200 - "https://smi-himpa-client.nuxt.dev/" "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36"
+140.213.131.41 - - [04/Jun/2025:06:29:36 +0000] "GET /api/admin/users HTTP/1.1" 200 - "https://smi-himpa-client.nuxt.dev/" "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36"
+140.213.131.41 - - [04/Jun/2025:06:30:04 +0000] "POST /api/borrow HTTP/1.1" 200 387 "https://smi-himpa-client.nuxt.dev/" "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36"
+>>>>>>> 9b89edf (Initial OCmmit)
