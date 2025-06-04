@@ -37,4 +37,4 @@ jobs:
         uses: nuxt-hub/action@v1
         id: deploy
         with:
-          project-key: himpa-irf6
+          project-key: himpa-server-gd5b
