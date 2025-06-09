@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node dist/index.js",
     "build": "tsc && npm run copy-assets",
-    "copy-assets": "cp -r src/templates dist/src/templates/ && cp .env dist/",
+    "copy-assets": "cp -r src/templates dist/src/templates/ && cp .env.example dist/",
     "dev": "ts-node-dev --respawn --transpile-only index.ts",
     "start:dev": "npm run dev",
     "format": "prettier --write 'src/**/*.{ts,tsx,js,jsx,json,md}'",
