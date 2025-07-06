@@ -344,6 +344,66 @@ class UserController {
       );
     }
   }
+
+  /**
+   * Delete a user
+   */
+  async deleteUser(req: Request, res: Response): Promise<Response> {
+    try {
+      const { id: userId } = req.params;
+
+      if (!userId) {
+        return Utility.handleError(
+          res,
+          "User ID is required",
+          ResponseCode.BAD_REQUEST,
+        );
+      }
+
+      const sanitizedUserId = Utility.escapeHtml(userId);
+      const userExists = await this.userService.getUserByField({
+        userId: sanitizedUserId,
+      });
+
+      if (!userExists) {
+        return Utility.handleError(
+          res,
+          "User not found",
+          ResponseCode.NOT_FOUND,
+        );
+      }
+
+      // Check if cascade parameter is provided
+      const cascade = req.query.cascade === "true";
+
+      await this.userService.deleteUser(
+        { userId: sanitizedUserId },
+        cascade,
+      );
+
+      const message = cascade
+        ? "User and related borrow records deleted successfully"
+        : "User deleted successfully";
+
+      return Utility.handleSuccess(res, message, {}, ResponseCode.SUCCESS);
+    } catch (error) {
+      // Handle foreign key constraint error specifically
+      if (
+        error instanceof Error &&
+        error.message.includes("Cannot delete user because they have")
+      ) {
+        return Utility.handleError(
+          res,
+          error.message,
+          ResponseCode.BAD_REQUEST,
+        );
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      return Utility.handleError(res, errorMessage, ResponseCode.SERVER_ERROR);
+    }
+  }
 }
 
 export default UserController;

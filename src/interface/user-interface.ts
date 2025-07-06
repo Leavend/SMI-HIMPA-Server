@@ -22,7 +22,7 @@ export interface IUser {
  */
 export interface IFindUserQuery {
   where: {
-    [key: string]: string;
+    [key: string]: any;
   };
   raw?: boolean;
   returning: boolean;
@@ -47,4 +47,5 @@ export interface IUserDataSource {
   fetchAll(query: IFindUserQuery): Promise<IUser[] | null>;
   create(record: IUserCreationBody): Promise<IUser>;
   updateOne(searchBy: IFindUserQuery, data: Partial<IUser>): Promise<void>;
+  deleteOne(query: IFindUserQuery): Promise<void>;
 }

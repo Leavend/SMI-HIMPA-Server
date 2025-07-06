@@ -2,6 +2,7 @@
  * User Data Source
  * Handles user data operations with the database
  */
+import { autoInjectable } from "tsyringe";
 import { Op } from "sequelize";
 import {
   IFindUserQuery,
@@ -11,6 +12,7 @@ import {
 } from "../interface/user-interface";
 import UserModel from "../model/user-model";
 
+@autoInjectable()
 class UserDataSource implements IUserDataSource {
   /**
    * Create a new user record
@@ -41,6 +43,13 @@ class UserDataSource implements IUserDataSource {
     data: Partial<IUser>,
   ): Promise<void> {
     await UserModel.update(data, searchBy);
+  }
+
+  /**
+   * Delete a single user record based on search criteria
+   */
+  async deleteOne(query: IFindUserQuery): Promise<void> {
+    await UserModel.destroy(query);
   }
 }
 

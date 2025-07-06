@@ -42,6 +42,11 @@ const createAdminRoute = () => {
     AdminAuth(),
     asyncHandler(userController.getUserRoleAdmin.bind(userController)),
   );
+  router.delete(
+    "/user/:id",
+    AdminAuth(),
+    asyncHandler(userController.deleteUser.bind(userController)),
+  );
 
   // Inventory Routes
   router.post(

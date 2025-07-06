@@ -5,13 +5,17 @@ import {
   IUserCreationBody,
 } from "../interface/user-interface";
 import UserDataSource from "../datasource/user-datasource";
+import BorrowDataSource from "../datasource/borrow-datasource";
 
 /**
  * Service class for handling user-related operations
  */
 @autoInjectable()
 class UserService {
-  constructor(private userDataSource: UserDataSource) {}
+  constructor(
+    private userDataSource: UserDataSource,
+    private borrowDataSource: BorrowDataSource
+  ) {}
 
   /**
    * Get user by field criteria
@@ -80,6 +84,49 @@ class UserService {
       await this.userDataSource.updateOne(query, record);
     } catch (error) {
       console.error("Error updating user record:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete user by search criteria
+   * @param searchBy - Criteria to find user to delete
+   * @param cascade - Whether to delete related borrow records (default: false)
+   * @returns Promise that resolves when deletion is complete
+   */
+  async deleteUser(searchBy: Partial<IUser>, cascade: boolean = false): Promise<void> {
+    try {
+      // Check if there are related borrow records
+      const relatedBorrows = await this.borrowDataSource.fetchAll({
+        where: { userId: searchBy.userId },
+        raw: true,
+        returning: false,
+      });
+
+      if (relatedBorrows && relatedBorrows.length > 0) {
+        if (!cascade) {
+          throw new Error(
+            `Cannot delete user because they have ${relatedBorrows.length} related borrow record(s). ` +
+            `Use cascade=true to delete related records as well.`
+          );
+        }
+
+        // If cascade is true, delete related borrow records first
+        for (const borrow of relatedBorrows) {
+          await this.borrowDataSource.deleteOne({
+            where: { borrowId: borrow.borrowId },
+            returning: false,
+          });
+        }
+      }
+
+      const query: IFindUserQuery = {
+        where: { ...searchBy },
+        returning: false,
+      };
+      await this.userDataSource.deleteOne(query);
+    } catch (error) {
+      console.error("Error deleting user:", error);
       throw error;
     }
   }
