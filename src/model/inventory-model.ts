@@ -1,3 +1,7 @@
+/**
+ * Inventory Sequelize model
+ * Represents the Inventories table in the database
+ */
 import { DataTypes } from "sequelize";
 import Db from "../database";
 import { IInventoryModel } from "../interface/inventory-interface";
@@ -16,6 +20,11 @@ const InventoryModel = Db.define<IInventoryModel>(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    code: {
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: false,
+    },
     quantity: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -24,11 +33,11 @@ const InventoryModel = Db.define<IInventoryModel>(
     condition: {
       type: DataTypes.STRING,
       allowNull: false,
+      defaultValue: "Available",
     },
-    code: {
-      type: DataTypes.STRING,
-      unique: true,
-      allowNull: false,
+    lastStockUpdate: {
+      type: DataTypes.DATE,
+      allowNull: true,
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -45,7 +54,7 @@ const InventoryModel = Db.define<IInventoryModel>(
     tableName: "Inventories",
     timestamps: true,
     underscored: true,
-    paranoid: true,
+    paranoid: false,
   },
 );
 

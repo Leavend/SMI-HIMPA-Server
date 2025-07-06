@@ -1,3 +1,7 @@
+/**
+ * User Sequelize model
+ * Represents the Users table in the database
+ */
 import { DataTypes } from "sequelize";
 import Db from "../database";
 import { IUserModel } from "../interface/user-interface";
@@ -50,7 +54,7 @@ const UserModel = Db.define<IUserModel>(
     tableName: "Users",
     timestamps: true,
     underscored: true,
-    paranoid: true,
+    paranoid: false,
   },
 );
 

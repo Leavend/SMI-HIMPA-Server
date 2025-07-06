@@ -1,3 +1,7 @@
+/**
+ * Return Data Source
+ * Handles return data operations with the database
+ */
 import {
   IFindReturnQuery,
   IReturn,
@@ -7,22 +11,30 @@ import {
 import ReturnModel from "../model/return-model";
 
 class ReturnDataSource implements IReturnDataSource {
-  // Create a new return record
+  /**
+   * Create a new return record
+   */
   async create(record: IReturnCreationBody): Promise<IReturn> {
     return ReturnModel.create(record);
   }
 
-  // Fetch a single return record based on search criteria
+  /**
+   * Fetch a single return record based on search criteria
+   */
   async fetchOne(query: IFindReturnQuery): Promise<IReturn | null> {
     return ReturnModel.findOne(query);
   }
 
-  // Fetch all return records based on search criteria
+  /**
+   * Fetch all return records based on search criteria
+   */
   async fetchAll(query: IFindReturnQuery): Promise<IReturn[] | null> {
     return ReturnModel.findAll(query);
   }
 
-  // Update a single return record based on search criteria
+  /**
+   * Update a single return record based on search criteria
+   */
   async updateOne(
     searchBy: IFindReturnQuery,
     data: Partial<IReturn>,
@@ -30,7 +42,9 @@ class ReturnDataSource implements IReturnDataSource {
     await ReturnModel.update(data, searchBy);
   }
 
-  // Delete a single return record based on search criteria
+  /**
+   * Delete a single return record based on search criteria
+   */
   async deleteOne(query: IFindReturnQuery): Promise<void> {
     await ReturnModel.destroy(query);
   }

@@ -1,6 +1,10 @@
+/**
+ * Token Sequelize model
+ * Represents the Tokens table in the database
+ */
+import { DataTypes } from "sequelize";
 import Db from "../database";
 import { ITokenModel } from "../interface/token-interface";
-import { DataTypes } from "sequelize";
 import { v7 as uuidv7 } from "uuid";
 
 const TokenModel = Db.define<ITokenModel>(
@@ -8,18 +12,17 @@ const TokenModel = Db.define<ITokenModel>(
   {
     id: {
       type: DataTypes.UUID,
+      primaryKey: true,
       defaultValue: () => uuidv7(),
       allowNull: false,
-      primaryKey: true,
     },
     key: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
     },
     code: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
     },
     type: {
       type: DataTypes.STRING,
@@ -27,12 +30,12 @@ const TokenModel = Db.define<ITokenModel>(
     },
     expires: {
       type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
       allowNull: false,
     },
     status: {
       type: DataTypes.STRING,
       allowNull: false,
+      defaultValue: "NOTUSED",
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -46,10 +49,10 @@ const TokenModel = Db.define<ITokenModel>(
     },
   },
   {
-    timestamps: true,
     tableName: "Tokens",
-    createdAt: "createdAt",
-    updatedAt: "updatedAt",
+    timestamps: true,
+    underscored: false,
+    paranoid: false,
   },
 );
 

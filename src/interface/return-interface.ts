@@ -1,9 +1,14 @@
+/**
+ * Return entity interfaces
+ */
 import { Optional, Model } from "sequelize";
 import { IBorrowDetail } from "./borrowDetail-interface";
 import { IInventory } from "./inventory-interface";
 import { IUser } from "./user-interface";
 
-// Interface utama untuk entitas Return
+/**
+ * Main interface for Return entity
+ */
 export interface IReturn {
   returnId: string;
   borrowId: string;
@@ -13,7 +18,6 @@ export interface IReturn {
   lateDays: number;
   createdAt: Date;
   updatedAt: Date;
-
   borrow?: {
     borrowDetails?: (IBorrowDetail & {
       inventory?: Pick<IInventory, "name">;
@@ -22,7 +26,9 @@ export interface IReturn {
   };
 }
 
-// Interface untuk query saat mencari Return
+/**
+ * Interface for Return search queries
+ */
 export interface IFindReturnQuery {
   where: {
     [key: string]: string | number;
@@ -32,7 +38,9 @@ export interface IFindReturnQuery {
   returning?: boolean;
 }
 
-// Interface untuk data yang diperlukan dalam pembuatan Return
+/**
+ * Interface for Return creation data
+ */
 export interface IReturnCreationBody
   extends Optional<
     IReturn,
@@ -44,12 +52,16 @@ export interface IReturnCreationBody
     | "lateDays"
   > {}
 
-// Interface model Sequelize yang menggabungkan IReturn dan metode Sequelize Model
+/**
+ * Sequelize model interface combining IReturn and Sequelize Model methods
+ */
 export interface IReturnModel
   extends Model<IReturn, IReturnCreationBody>,
     IReturn {}
 
-// Interface untuk data source Return (repository pattern)
+/**
+ * Interface for Return data source (repository pattern)
+ */
 export interface IReturnDataSource {
   fetchOne(query: IFindReturnQuery): Promise<IReturn | null>;
   fetchAll(query: IFindReturnQuery): Promise<IReturn[] | null>;

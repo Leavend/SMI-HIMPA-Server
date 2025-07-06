@@ -1,3 +1,4 @@
+import { autoInjectable } from "tsyringe";
 import {
   IFindBorrowQuery,
   IBorrow,
@@ -6,6 +7,7 @@ import {
 } from "../interface/borrow-interface";
 import BorrowModel from "../model/borrow-model";
 
+@autoInjectable()
 class BorrowDataSource implements IBorrowDataSource {
   // Create a new borrow record
   async create(record: IBorrowCreationBody): Promise<IBorrow> {

@@ -1,3 +1,6 @@
+/**
+ * HTTP response codes enumeration
+ */
 export const ResponseCode = {
   ALREADY_EXIST: 401,
   NOT_FOUND: 404,
@@ -6,4 +9,4 @@ export const ResponseCode = {
   SERVER_ERROR: 500,
   INVALID_DATA: 422,
   FORBIDDEN: 403,
-};
+} as const;

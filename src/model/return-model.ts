@@ -1,3 +1,7 @@
+/**
+ * Return Sequelize model
+ * Represents the Returns table in the database
+ */
 import { DataTypes } from "sequelize";
 import Db from "../database";
 import { IReturnModel } from "../interface/return-interface";
@@ -33,6 +37,7 @@ const ReturnModel = Db.define<IReturnModel>(
     dateReturn: {
       type: DataTypes.DATE,
       allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
     lateDays: {
       type: DataTypes.INTEGER,
@@ -54,7 +59,7 @@ const ReturnModel = Db.define<IReturnModel>(
     tableName: "Returns",
     timestamps: true,
     underscored: true,
-    paranoid: true,
+    paranoid: false,
   },
 );
 

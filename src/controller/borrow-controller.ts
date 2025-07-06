@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { autoInjectable } from "tsyringe";
-import { IBorrowCreationBody } from "../interface/borrow-interface";
+import { IBorrowCreationBody, IBorrow } from "../interface/borrow-interface";
+import { IBorrowDetail } from "../interface/borrowDetail-interface";
 import BorrowService from "../service/borrow-service";
 import BorrowDetailService from "../service/borrowDetail-service";
 import UserService from "../service/user-service";
@@ -12,6 +13,34 @@ import InventoryService from "../service/inventory-service";
 import ReturnService from "../service/return-service";
 import { InventoryStatus } from "../interface/enum/inventory-enum";
 
+// Types
+interface CreateBorrowParams {
+  inventoryId: string;
+  quantity: number;
+  dateBorrow: string;
+  dateReturn: string;
+  userId: string;
+  adminId: string;
+}
+
+interface ApprovalParams {
+  borrowId: string;
+  status: string;
+}
+
+interface User {
+  userId: string;
+  username: string;
+  number: string;
+}
+
+interface InventoryItem {
+  inventoryId: string;
+  name: string;
+  quantity: number;
+  condition: string;
+}
+
 @autoInjectable()
 class BorrowController {
   constructor(
@@ -22,12 +51,18 @@ class BorrowController {
     private returnService: ReturnService,
   ) {}
 
-  async createBorrow(req: Request, res: Response) {
+  /**
+   * Create a new borrow record
+   * @param req - Express request object
+   * @param res - Express response object
+   */
+  async createBorrow(req: Request, res: Response): Promise<Response> {
     const transaction = await this.borrowService.startTransaction();
-    try {
-      const params = { ...req.body };
 
-      // 1. Validasi inventory
+    try {
+      const params: CreateBorrowParams = { ...req.body };
+
+      // Validate inventory
       const item = await this.inventoryService.getInventoryByField({
         inventoryId: params.inventoryId,
       });
@@ -48,7 +83,7 @@ class BorrowController {
         );
       }
 
-      // 2. Validasi user dan admin
+      // Validate user and admin
       const [user, admin] = await Promise.all([
         this.userService.getUserByField({ userId: params.userId }),
         this.userService.getUserByField({ userId: params.adminId }),
@@ -58,20 +93,19 @@ class BorrowController {
         throw new Error("User or admin contact is missing.");
       }
 
-      // 3. Hitung quantity baru
+      // Calculate new quantity
       const newQuantity = item.quantity - params.quantity;
       const updateInventoryData = {
         quantity: newQuantity,
-        // Auto-update condition jika quantity habis
         condition:
           newQuantity <= 0 ? InventoryStatus.OUT_OF_STOCK : item.condition,
       };
 
-      // 4. Buat transaksi peminjaman
+      // Create borrow transaction
       const newBorrow: IBorrowCreationBody = {
         quantity: params.quantity,
-        dateBorrow: params.dateBorrow,
-        dateReturn: params.dateReturn,
+        dateBorrow: new Date(params.dateBorrow),
+        dateReturn: new Date(params.dateReturn),
         userId: params.userId,
         adminId: params.adminId,
       };
@@ -81,7 +115,7 @@ class BorrowController {
         transaction,
       );
 
-      // 5. Buat detail peminjaman
+      // Create borrow detail
       const detailBorrow = await this.borrowDetailService.createBorrowDetail(
         {
           borrowId: borrow.borrowId,
@@ -91,28 +125,28 @@ class BorrowController {
         transaction,
       );
 
-      // 6. Update inventory (termasuk condition jika perlu)
+      // Update inventory
       await this.inventoryService.updateInventoryRecord(
         { inventoryId: item.inventoryId },
         updateInventoryData,
         transaction,
       );
 
-      // 7. Buat record pengembalian
+      // Create return record
       await this.returnService.createReturn(
         {
           borrowId: borrow.borrowId,
           quantity: params.quantity,
-          dateBorrow: params.dateBorrow,
-          dateReturn: params.dateReturn,
+          dateBorrow: new Date(params.dateBorrow),
+          dateReturn: new Date(params.dateReturn),
         },
         transaction,
       );
 
-      // 8. Commit transaksi
+      // Commit transaction
       await transaction.commit();
 
-      // 9. Kirim notifikasi
+      // Send notifications
       await this.sendWhatsAppNotifications(user, admin, item, params);
 
       return Utility.handleSuccess(
@@ -123,21 +157,25 @@ class BorrowController {
       );
     } catch (error) {
       await transaction.rollback();
-      console.error("Borrow creation failed:", error);
-      return Utility.handleError(
-        res,
-        (error as Error).message || "Failed to create borrow",
-        ResponseCode.SERVER_ERROR,
-      );
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create borrow";
+      return Utility.handleError(res, errorMessage, ResponseCode.SERVER_ERROR);
     }
   }
 
+  /**
+   * Send WhatsApp notifications to user and admin
+   * @param user - User information
+   * @param admin - Admin information
+   * @param item - Inventory item
+   * @param params - Borrow parameters
+   */
   private async sendWhatsAppNotifications(
-    user: any,
-    admin: any,
-    item: any,
-    params: any,
-  ) {
+    user: User,
+    admin: User,
+    item: InventoryItem,
+    params: CreateBorrowParams,
+  ): Promise<void> {
     try {
       await WhatsAppService.sendBorrowMessageToUser(
         user,
@@ -146,8 +184,8 @@ class BorrowController {
         params.dateBorrow,
         params.dateReturn,
       );
-    } catch (err) {
-      console.error("Failed to send WA to user:", err);
+    } catch (error) {
+      console.error("Failed to send WA to user:", error);
     }
 
     try {
@@ -159,14 +197,20 @@ class BorrowController {
         params.dateBorrow,
         params.dateReturn,
       );
-    } catch (err) {
-      console.error("Failed to send WA to admin:", err);
+    } catch (error) {
+      console.error("Failed to send WA to admin:", error);
     }
   }
 
-  async findAllBorrows(_req: Request, res: Response) {
+  /**
+   * Get all borrow records
+   * @param _req - Express request object (unused)
+   * @param res - Express response object
+   */
+  async findAllBorrows(_req: Request, res: Response): Promise<Response> {
     try {
       const borrows = await this.borrowService.getAllBorrows();
+
       if (!borrows?.length) {
         return Utility.handleError(
           res,
@@ -174,6 +218,7 @@ class BorrowController {
           ResponseCode.NOT_FOUND,
         );
       }
+
       return Utility.handleSuccess(
         res,
         "Success",
@@ -181,17 +226,21 @@ class BorrowController {
         ResponseCode.SUCCESS,
       );
     } catch (error) {
-      return Utility.handleError(
-        res,
-        (error as Error).message,
-        ResponseCode.SERVER_ERROR,
-      );
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      return Utility.handleError(res, errorMessage, ResponseCode.SERVER_ERROR);
     }
   }
 
-  async getBorrowsByUser(req: Request, res: Response) {
+  /**
+   * Get borrow records by user ID
+   * @param req - Express request object
+   * @param res - Express response object
+   */
+  async getBorrowsByUser(req: Request, res: Response): Promise<Response> {
     try {
       const { id: userId } = req.params;
+
       const user = await this.userService.getUserByField({ userId });
       if (!user) {
         return Utility.handleError(
@@ -204,6 +253,7 @@ class BorrowController {
       const borrowRecords = await this.borrowService.getBorrowsByFields({
         userId,
       });
+
       if (!borrowRecords?.length) {
         return Utility.handleError(
           res,
@@ -219,17 +269,20 @@ class BorrowController {
         ResponseCode.SUCCESS,
       );
     } catch (error) {
-      return Utility.handleError(
-        res,
-        (error as Error).message,
-        ResponseCode.SERVER_ERROR,
-      );
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      return Utility.handleError(res, errorMessage, ResponseCode.SERVER_ERROR);
     }
   }
 
-  async updateBorrow(req: Request, res: Response) {
+  /**
+   * Update a borrow record
+   * @param req - Express request object
+   * @param res - Express response object
+   */
+  async updateBorrow(req: Request, res: Response): Promise<Response> {
     try {
-      const borrowId = req.params.id;
+      const { id: borrowId } = req.params;
 
       const [borrow, borrowDetail] = await Promise.all([
         this.borrowService.getBorrowByField({ borrowId }),
@@ -244,34 +297,34 @@ class BorrowController {
         );
       }
 
-      const updatedBorrow = await this.borrowService.updateBorrowRecord(
+      await this.borrowService.updateBorrowRecord({ borrowId }, req.body);
+      await this.borrowDetailService.updateBorrowDetailRecord(
         { borrowId },
         req.body,
       );
-      const updatedBorrowDetail =
-        await this.borrowDetailService.updateBorrowDetailRecord(
-          { borrowId },
-          req.body,
-        );
 
       return Utility.handleSuccess(
         res,
         "Borrow updated successfully",
-        { updatedBorrow, updatedBorrowDetail },
+        { borrowId },
         ResponseCode.SUCCESS,
       );
     } catch (error) {
-      return Utility.handleError(
-        res,
-        (error as Error).message,
-        ResponseCode.SERVER_ERROR,
-      );
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      return Utility.handleError(res, errorMessage, ResponseCode.SERVER_ERROR);
     }
   }
 
-  async deleteBorrow(req: Request, res: Response) {
+  /**
+   * Delete a borrow record
+   * @param req - Express request object
+   * @param res - Express response object
+   */
+  async deleteBorrow(req: Request, res: Response): Promise<Response> {
     try {
       const { id: borrowId } = req.params;
+
       if (!borrowId) {
         return Utility.handleError(
           res,
@@ -284,6 +337,7 @@ class BorrowController {
       const borrowExists = await this.borrowService.getBorrowByField({
         borrowId: sanitizedBorrowId,
       });
+
       if (!borrowExists) {
         return Utility.handleError(
           res,
@@ -292,26 +346,46 @@ class BorrowController {
         );
       }
 
-      await this.borrowService.deleteBorrow({ borrowId: sanitizedBorrowId });
+      // Check if cascade parameter is provided
+      const cascade = req.query.cascade === "true";
 
-      return Utility.handleSuccess(
-        res,
-        "Borrow deleted successfully",
-        {},
-        ResponseCode.SUCCESS,
+      await this.borrowService.deleteBorrow(
+        { borrowId: sanitizedBorrowId },
+        cascade,
       );
+
+      const message = cascade
+        ? "Borrow record and related borrow details deleted successfully"
+        : "Borrow record deleted successfully";
+
+      return Utility.handleSuccess(res, message, {}, ResponseCode.SUCCESS);
     } catch (error) {
-      return Utility.handleError(
-        res,
-        (error as Error).message,
-        ResponseCode.SERVER_ERROR,
-      );
+      // Handle foreign key constraint error specifically
+      if (
+        error instanceof Error &&
+        error.message.includes("Cannot delete borrow because it has")
+      ) {
+        return Utility.handleError(
+          res,
+          error.message,
+          ResponseCode.BAD_REQUEST,
+        );
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      return Utility.handleError(res, errorMessage, ResponseCode.SERVER_ERROR);
     }
   }
 
-  async approveOrDeclineBorrow(req: Request, res: Response) {
+  /**
+   * Approve or decline a borrow request
+   * @param req - Express request object
+   * @param res - Express response object
+   */
+  async approveOrDeclineBorrow(req: Request, res: Response): Promise<Response> {
     try {
-      const { borrowId, status } = req.body;
+      const { borrowId, status }: ApprovalParams = req.body;
 
       // Validate required fields
       if (!borrowId || !status) {
@@ -349,14 +423,14 @@ class BorrowController {
       }
 
       // Prepare update data
-      const updateData: any = { status: normalizedStatus };
+      const updateData: Record<string, unknown> = { status: normalizedStatus };
 
       // Add return date if status is RETURNED
       if (normalizedStatus === "RETURNED") {
         updateData.dateReturn = new Date().toISOString();
       }
 
-      // Update status - remove the truthiness check since method returns void
+      // Update status
       await this.borrowDetailService.updateBorrowDetailRecord(
         { borrowId },
         updateData,
@@ -389,20 +463,23 @@ class BorrowController {
         ResponseCode.SUCCESS,
       );
     } catch (error) {
-      console.error("Error in approveOrDeclineBorrow:", error);
-      return Utility.handleError(
-        res,
-        (error as Error).message || "Internal server error",
-        ResponseCode.SERVER_ERROR,
-      );
+      const errorMessage =
+        error instanceof Error ? error.message : "Internal server error";
+      return Utility.handleError(res, errorMessage, ResponseCode.SERVER_ERROR);
     }
   }
 
+  /**
+   * Send approval notification to user
+   * @param borrow - Borrow record
+   * @param borrowDetails - Borrow details
+   * @param status - Approval status
+   */
   private async sendApprovalNotification(
-    borrow: any,
-    borrowDetails: any[],
+    borrow: IBorrow,
+    borrowDetails: IBorrowDetail[],
     status: string,
-  ) {
+  ): Promise<void> {
     try {
       const user = await this.userService.getUserByField({
         userId: borrow.userId,
@@ -416,7 +493,7 @@ class BorrowController {
         if (!user || !item) continue;
 
         await WhatsAppService.sendConfirmationBorrowMessageToUser(
-          user.username,
+          user,
           user.number,
           item.name,
           borrow.dateBorrow.toISOString(),

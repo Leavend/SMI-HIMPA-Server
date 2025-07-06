@@ -1,4 +1,6 @@
-// Enum untuk status barang dalam inventory
+/**
+ * Inventory status enumeration
+ */
 export enum InventoryStatus {
   AVAILABLE = "Available",
   OUT_OF_STOCK = "Out of Stock",

@@ -1,24 +1,46 @@
 import { Sequelize, Dialect } from "sequelize";
 import dotenv from "dotenv-safe";
+import { APP_CONFIG } from "../config/app-config";
 
-// const envFile =
-//   process.env.NODE_ENV === "development" ? ".env.dev" : ".env.local";
-// dotenv.config({ path: envFile });
+// Load environment variables
+dotenv.config({ path: APP_CONFIG.envFilePath });
 
-dotenv.config({ path: ".env" });
+const {
+  db: { host, port, username, password, database, dialect },
+} = APP_CONFIG;
 
-const username = process.env.DB_USERNAME!;
-const password = process.env.DB_PASSWORD!;
-const database = process.env.DB_NAME!;
-const host = process.env.DB_HOST!;
-const dialect = (process.env.DB_TYPE as Dialect) ?? "mysql";
-const port = parseInt(process.env.DB_PORT ?? "3306");
+// Validate required database configuration
+const validateDatabaseConfig = (): void => {
+  const requiredFields = { host, username, password, database };
+  const missingFields = Object.entries(requiredFields)
+    .filter(([, value]) => !value)
+    .map(([key]) => key);
+
+  if (missingFields.length > 0) {
+    throw new Error(
+      `Missing required database configuration: ${missingFields.join(", ")}`,
+    );
+  }
+};
+
+// Initialize database configuration
+validateDatabaseConfig();
 
 const sequelize = new Sequelize(database, username, password, {
   host,
-  dialect,
+  dialect: dialect as Dialect,
   port,
-  logging: false,
+  logging: APP_CONFIG.db.logging,
+  pool: {
+    max: 5,
+    min: 0,
+    acquire: 30000,
+    idle: 10000,
+  },
+  define: {
+    timestamps: true,
+    underscored: true,
+  },
 });
 
 export default sequelize;

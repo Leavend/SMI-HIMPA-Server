@@ -1,129 +1,64 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
-    xmlns:o="urn:schemas-microsoft-com:office:office">
-
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>#APPNAME#</title>
-
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css?family=Roboto:400,600" rel="stylesheet" type="text/css">
-
-    <style>
-        body {
-            margin: 0 auto !important;
-            padding: 0 !important;
-            height: 100% !important;
-            width: 100% !important;
-            font-family: 'Roboto', sans-serif !important;
-            background-color: #f5f6fa;
-            color: #000000;
-            font-size: 14px;
-            line-height: 24px;
-        }
-
-        a {
-            text-decoration: none;
-        }
-
-        table {
-            border-collapse: collapse !important;
-            margin: 0 auto !important;
-        }
-
-        img {
-            border: 0;
-            outline: none;
-            text-decoration: none;
-            -ms-interpolation-mode: bicubic;
-        }
-
-        p {
-            margin: 10px 0;
-        }
-
-        ul {
-            margin: 10px 0;
-            padding: 0;
-        }
-
-        li {
-            display: inline-block;
-            list-style: none;
-            margin-right: 8px;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>#APPNAME#</title>
+  <style>
+    body { margin: 0; padding: 0; background: #f5f6fa; font-family: 'Roboto', Arial, sans-serif; }
+    table { border-collapse: collapse; }
+    a { color: #3876b4; text-decoration: none; }
+    .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.07); }
+    .header { background: #3876b4; color: #fff; border-radius: 8px 8px 0 0; padding: 24px 0; text-align: center; }
+    .header h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 1px; }
+    .content { padding: 32px 28px 24px 28px; color: #222; }
+    .content h2 { color: #3876b4; font-size: 28px; margin: 24px 0 16px 0; text-align: center; letter-spacing: 2px; }
+    .content p { margin: 16px 0; font-size: 15px; line-height: 1.7; }
+    .content strong { font-weight: 600; }
+    .footer { background: #f5f6fa; border-radius: 0 0 8px 8px; text-align: center; padding: 20px 0 10px 0; color: #8094ae; font-size: 12px; }
+    .social-list { margin: 10px 0 0 0; padding: 0; }
+    .social-list li { display: inline-block; margin: 0 6px; }
+    .social-list img { border-radius: 50%; background: #fff; width: 28px; height: 28px; }
+    @media only screen and (max-width: 600px) {
+      .container, .content { padding: 10px !important; }
+      .header, .footer { padding: 12px 0 !important; }
+    }
+  </style>
 </head>
-
 <body>
-    <center>
-        <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#f5f6fa">
+  <center>
+    <table width="100%" bgcolor="#f5f6fa">
+      <tr>
+        <td align="center">
+          <table class="container" width="100%">
+            <!-- Header -->
             <tr>
-                <td align="center" style="padding: 40px 0;">
-                    <!-- Main Container -->
-                    <table width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-                        <!-- Header -->
-                        <tr>
-                            <td align="center" style="padding: 20px; background-color: #3876b4; color: #ffffff; border-radius: 8px 8px 0 0;">
-                                <h1 style="margin: 0; font-size: 24px; font-weight: 600;">#APPNAME#</h1>
-                            </td>
-                        </tr>
-
-                        <!-- Body -->
-                        <tr>
-                            <td style="padding: 30px; color: #000000;">
-                                <p>Hello <strong>#NAME#</strong>,</p>
-
-                                <p>Your reset password code is:</p>
-                                <h2 style="text-align: center; color: #3876b4; margin: 20px 0; font-size: 28px;">#MESSAGE#</h2>
-
-                                <p style="font-size: 16px; font-weight: bold; margin-top: 30px;">
-                                    HAVE QUESTIONS OR NEED ASSISTANCE?
-                                </p>
-                                <p>
-                                    Our dedicated support team is here to help you with any queries you might have. Feel free to reach out to us at
-                                    <a href="mailto:#SUPPORTMAIL#" style="color: #3876b4; font-weight: 600;">#SUPPORTMAIL#</a> if you need assistance at any point.
-                                </p>
-
-                                <p>Thank you for choosing <strong>#APPNAME#</strong>. We can't wait to see you thrive and make the most of your journey with us!</p>
-                            </td>
-                        </tr>
-
-                        <!-- Footer -->
-                        <tr>
-                            <td align="center" style="padding: 20px; background-color: #f5f6fa; border-radius: 0 0 8px 8px;">
-                                <p style="font-size: 12px; margin: 0; color: #8094ae;">
-                                    This email was sent to you as a registered user of <strong>#APPNAME#</strong>.
-                                </p>
-                                <p style="margin: 10px 0; font-size: 12px;">Stay updated with us on social media:</p>
-
-                                <ul style="margin: 0; padding: 0;">
-                                    <li>
-                                        <a href="https://twitter.com" target="_blank">
-                                            <img src="https://www.iconpacks.net/icons/2/free-twitter-logo-icon-2429-thumb.png" alt="Twitter" width="30" style="border-radius: 50%; background-color: #ffffff;">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="https://youtube.com" target="_blank">
-                                            <img src="https://cdn-icons-png.flaticon.com/512/2504/2504848.png" alt="YouTube" width="30" style="border-radius: 50%; background-color: #ffffff;">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="https://medium.com" target="_blank">
-                                            <img src="http://cdn.onlinewebfonts.com/svg/img_256332.png" alt="Medium" width="30" style="border-radius: 50%; background-color: #ffffff;">
-                                        </a>
-                                    </li>
-                                </ul>
-                            </td>
-                        </tr>
-                    </table>
-                    <!-- End Main Container -->
-                </td>
+              <td class="header">
+                <h1>#APPNAME#</h1>
+              </td>
             </tr>
-        </table>
-    </center>
+            <!-- Content -->
+            <tr>
+              <td class="content">
+                <p>Hello <strong>#NAME#</strong>,</p>
+                <p>Your reset password code is:</p>
+                <h2>#MESSAGE#</h2>
+                <p style="font-size: 15px; font-weight: bold; margin-top: 32px;">HAVE QUESTIONS OR NEED ASSISTANCE?</p>
+                <p>Our support team is here to help you. Contact us at <a href="mailto:#SUPPORTMAIL#">#SUPPORTMAIL#</a> if you need assistance at any point.</p>
+                <p>Thank you for choosing <strong>#APPNAME#</strong>. We can't wait to see you thrive and make the most of your journey with us!</p>
+              </td>
+            </tr>
+            <!-- Footer -->
+            <tr>
+              <td class="footer">
+                <p>This email was sent to you as a registered user of <strong>#APPNAME#</strong>.</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </center>
 </body>
-
 </html>

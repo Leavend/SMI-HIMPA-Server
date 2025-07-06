@@ -53,7 +53,7 @@ const BorrowModel = Db.define<IBorrowModel>(
     tableName: "Borrows",
     timestamps: true,
     underscored: true,
-    paranoid: true,
+    paranoid: false,
   },
 );
 

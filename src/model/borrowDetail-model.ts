@@ -1,3 +1,7 @@
+/**
+ * Borrow Detail Sequelize model
+ * Represents the BorrowDetails table in the database
+ */
 import { DataTypes } from "sequelize";
 import Db from "../database";
 import { IBorrowDetailModel } from "../interface/borrowDetail-interface";
@@ -31,6 +35,7 @@ const BorrowDetailModel = Db.define<IBorrowDetailModel>(
     status: {
       type: DataTypes.STRING,
       allowNull: false,
+      defaultValue: "PENDING",
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -47,7 +52,7 @@ const BorrowDetailModel = Db.define<IBorrowDetailModel>(
     tableName: "BorrowDetails",
     timestamps: true,
     underscored: true,
-    paranoid: true,
+    paranoid: false,
   },
 );
 

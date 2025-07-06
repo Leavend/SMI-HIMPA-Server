@@ -70,11 +70,13 @@ const createAdminRoute = () => {
   );
   router.put(
     "/borrow/:id",
+    AdminAuth(),
     validator(BorrowValidationSchema.updateBorrowSchema),
     asyncHandler(borrowController.updateBorrow.bind(borrowController)),
   );
   router.delete(
     "/borrow/:id",
+    AdminAuth(),
     asyncHandler(borrowController.deleteBorrow.bind(borrowController)),
   );
   router.patch(

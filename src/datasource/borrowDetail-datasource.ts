@@ -1,3 +1,8 @@
+/**
+ * Borrow Detail Data Source
+ * Handles borrow detail data operations with the database
+ */
+import { autoInjectable } from "tsyringe";
 import {
   IFindBorrowDetailQuery,
   IBorrowDetail,
@@ -6,25 +11,34 @@ import {
 } from "../interface/borrowDetail-interface";
 import BorrowDetailModel from "../model/borrowDetail-model";
 
+@autoInjectable()
 class BorrowDetailDataSource implements IBorrowDetailDataSource {
-  // Buat borrow detail record baru
+  /**
+   * Create a new borrow detail record
+   */
   async create(record: IBorrowDetailCreationBody): Promise<IBorrowDetail> {
     return BorrowDetailModel.create(record);
   }
 
-  // Ambil satu borrow detail berdasarkan kriteria
+  /**
+   * Fetch a single borrow detail record based on search criteria
+   */
   async fetchOne(query: IFindBorrowDetailQuery): Promise<IBorrowDetail | null> {
     return BorrowDetailModel.findOne(query);
   }
 
-  // Ambil semua borrow detail berdasarkan kriteria
+  /**
+   * Fetch all borrow detail records based on search criteria
+   */
   async fetchAll(
     query: IFindBorrowDetailQuery,
   ): Promise<IBorrowDetail[] | null> {
     return BorrowDetailModel.findAll(query);
   }
 
-  // Update satu record berdasarkan query
+  /**
+   * Update a single borrow detail record based on search criteria
+   */
   async updateOne(
     query: IFindBorrowDetailQuery,
     data: Partial<IBorrowDetail>,
@@ -33,7 +47,9 @@ class BorrowDetailDataSource implements IBorrowDetailDataSource {
     await BorrowDetailModel.update(data, { where });
   }
 
-  // Hapus satu record berdasarkan query
+  /**
+   * Delete a single borrow detail record based on search criteria
+   */
   async deleteOne(query: IFindBorrowDetailQuery): Promise<void> {
     const { where } = query;
     await BorrowDetailModel.destroy({ where });

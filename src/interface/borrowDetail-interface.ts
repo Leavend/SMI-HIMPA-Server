@@ -1,6 +1,12 @@
-import { Optional, Model } from "sequelize";
+/**
+ * Borrow Detail entity interfaces
+ */
+import { Optional, Model, IncludeOptions } from "sequelize";
+import { IInventory } from "./inventory-interface";
 
-// Interface utama untuk entitas BorrowDetail
+/**
+ * Main interface for Borrow Detail entity
+ */
 export interface IBorrowDetail {
   borrowDetailId: string;
   borrowId: string;
@@ -8,42 +14,45 @@ export interface IBorrowDetail {
   status: string;
   createdAt: Date;
   updatedAt: Date;
+  inventory?: IInventory;
 }
 
-// Interface untuk query saat mencari BorrowDetail
+/**
+ * Interface for Borrow Detail search queries
+ */
 export interface IFindBorrowDetailQuery {
-  where: {
-    [key: string]: string | number;
-  };
-  order?: any;
+  where: Record<string, unknown>;
+  include?: IncludeOptions[];
+  order?: any[];
   raw?: boolean;
   returning: boolean;
 }
 
-// Interface untuk data yang diperlukan dalam pembuatan BorrowDetail
+/**
+ * Interface for Borrow Detail creation data
+ */
 export interface IBorrowDetailCreationBody
   extends Optional<
     IBorrowDetail,
-    | "borrowDetailId"
-    | "createdAt"
-    | "updatedAt"
-    | "borrowId"
-    | "inventoryId"
-    | "status"
+    "borrowDetailId" | "createdAt" | "updatedAt"
   > {}
 
-// Interface model Sequelize yang menggabungkan IBorrowDetail dan metode Sequelize Model
+/**
+ * Sequelize model interface combining IBorrowDetail and Sequelize Model methods
+ */
 export interface IBorrowDetailModel
   extends Model<IBorrowDetail, IBorrowDetailCreationBody>,
     IBorrowDetail {}
 
-// Interface untuk data source BorrowDetail (repository pattern)
+/**
+ * Interface for Borrow Detail data source (repository pattern)
+ */
 export interface IBorrowDetailDataSource {
   fetchOne(query: IFindBorrowDetailQuery): Promise<IBorrowDetail | null>;
   fetchAll(query: IFindBorrowDetailQuery): Promise<IBorrowDetail[] | null>;
   create(record: IBorrowDetailCreationBody): Promise<IBorrowDetail>;
   updateOne(
-    searchBy: IFindBorrowDetailQuery,
+    query: IFindBorrowDetailQuery,
     data: Partial<IBorrowDetail>,
   ): Promise<void>;
   deleteOne(query: IFindBorrowDetailQuery): Promise<void>;

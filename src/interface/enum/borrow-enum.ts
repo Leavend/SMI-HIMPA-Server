@@ -1,3 +1,6 @@
+/**
+ * Borrow status enumeration
+ */
 export const BorrowStatus = {
   PENDING: "PENDING",
   ACTIVE: "ACTIVE",

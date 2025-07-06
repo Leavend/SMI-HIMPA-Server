@@ -1,13 +1,15 @@
+/**
+ * User Controller
+ * Handles user registration, authentication, and management
+ */
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import JWT from "jsonwebtoken";
 import moment from "moment";
 import { autoInjectable } from "tsyringe";
-
 import Utility from "../utils/index.utils";
 import { ResponseCode } from "../interface/enum/code-enum";
 import { UserRoles } from "../interface/enum/user-enum";
-
 import UserService from "../service/user-service";
 import TokenService from "../service/token-service";
 import { IToken } from "../interface/token-interface";
@@ -21,13 +23,13 @@ class UserController {
     private tokenService: TokenService,
   ) {}
 
-  // Register new user
-  async register(req: Request, res: Response) {
+  /**
+   * Register new user
+   */
+  async register(req: Request, res: Response): Promise<Response> {
     try {
       const { email, username, password, number } = req.body;
-
       const formattedNumber = Utility.formatPhoneNumberToWhatsApp(number);
-
       const existingEmail = await this.userService.getUserByField({ email });
       if (existingEmail) {
         return Utility.handleError(
@@ -36,7 +38,6 @@ class UserController {
           ResponseCode.ALREADY_EXIST,
         );
       }
-
       const existingUsername = await this.userService.getUserByField({
         username,
       });
@@ -47,7 +48,6 @@ class UserController {
           ResponseCode.ALREADY_EXIST,
         );
       }
-
       const existingNumber = await this.userService.getUserByField({
         number: formattedNumber,
       });
@@ -58,7 +58,6 @@ class UserController {
           ResponseCode.ALREADY_EXIST,
         );
       }
-
       const hashedPassword = await bcrypt.hash(password, 10);
       const newUser = {
         email,
@@ -67,25 +66,22 @@ class UserController {
         role: UserRoles.BORROW,
         number: formattedNumber,
       };
-
       const user = await this.userService.createUser(newUser);
-      user.password = ""; // Remove sensitive data
-
+      user.password = "";
       await WhatsAppService.sendMessage(
         user,
         formattedNumber,
         "Account Registration",
         "📢 Your account has been successfully created!",
       );
-
-      Utility.handleSuccess(
+      return Utility.handleSuccess(
         res,
         "User registered successfully",
         { user },
         ResponseCode.SUCCESS,
       );
     } catch (error) {
-      Utility.handleError(
+      return Utility.handleError(
         res,
         "An error occurred during registration.",
         ResponseCode.SERVER_ERROR,
@@ -93,11 +89,12 @@ class UserController {
     }
   }
 
-  // User login
-  async login(req: Request, res: Response) {
+  /**
+   * User login
+   */
+  async login(req: Request, res: Response): Promise<Response> {
     try {
       const { username, password } = req.body;
-
       const user = await this.userService.getUserByField({ username });
       if (!user || !(await bcrypt.compare(password, user.password))) {
         return Utility.handleError(
@@ -106,23 +103,20 @@ class UserController {
           ResponseCode.ALREADY_EXIST,
         );
       }
-
       const token = JWT.sign(
         { userId: user.userId, email: user.email, role: user.role },
         process.env.JWT_KEY as string,
         { expiresIn: "7d" },
       );
-
-      user.password = ""; // Remove sensitive data
-
-      Utility.handleSuccess(
+      user.password = "";
+      return Utility.handleSuccess(
         res,
         "Login successful",
         { user, token },
         ResponseCode.SUCCESS,
       );
     } catch (error) {
-      Utility.handleError(
+      return Utility.handleError(
         res,
         "An error occurred during login.",
         ResponseCode.SERVER_ERROR,
@@ -130,11 +124,12 @@ class UserController {
     }
   }
 
-  // Forgot password
-  async forgotPassword(req: Request, res: Response) {
+  /**
+   * Forgot password
+   */
+  async forgotPassword(req: Request, res: Response): Promise<Response> {
     try {
       const { email } = req.body;
-
       const user = await this.userService.getUserByField({ email });
       if (!user) {
         return Utility.handleError(
@@ -143,20 +138,18 @@ class UserController {
           ResponseCode.NOT_FOUND,
         );
       }
-
       const token = (await this.tokenService.createForgotPasswordToken(
         email,
       )) as IToken;
       await EmailService.sendForgotPasswordMail(user, email, token.code);
-
-      Utility.handleSuccess(
+      return Utility.handleSuccess(
         res,
         "Password reset code has been sent to your email",
         {},
         ResponseCode.SUCCESS,
       );
     } catch (error) {
-      Utility.handleError(
+      return Utility.handleError(
         res,
         "An error occurred during password recovery.",
         ResponseCode.SERVER_ERROR,
@@ -164,18 +157,18 @@ class UserController {
     }
   }
 
-  // Reset password
-  async resetPassword(req: Request, res: Response) {
+  /**
+   * Reset password
+   */
+  async resetPassword(req: Request, res: Response): Promise<Response> {
     try {
       const { email, code, password } = req.body;
-
       const isValidToken = await this.tokenService.getTokenByField({
         key: email,
         code,
         type: this.tokenService.TokenTypes.FORGOT_PASSWORD,
         status: this.tokenService.TokenStatus.NOTUSED,
       });
-
       if (!isValidToken || moment(isValidToken.expires).isBefore(moment())) {
         return Utility.handleError(
           res,
@@ -183,7 +176,6 @@ class UserController {
           ResponseCode.NOT_FOUND,
         );
       }
-
       const user = await this.userService.getUserByField({ email });
       if (!user) {
         return Utility.handleError(
@@ -192,7 +184,6 @@ class UserController {
           ResponseCode.NOT_FOUND,
         );
       }
-
       if (bcrypt.compareSync(password, user.password)) {
         return Utility.handleError(
           res,
@@ -200,9 +191,7 @@ class UserController {
           ResponseCode.BAD_REQUEST,
         );
       }
-
       const hashedPassword = bcrypt.hashSync(password, 10);
-
       await this.userService.updateRecord(
         { userId: user.userId },
         { password: hashedPassword },
@@ -211,7 +200,6 @@ class UserController {
         { id: isValidToken.id },
         { status: this.tokenService.TokenStatus.USED },
       );
-
       return Utility.handleSuccess(
         res,
         "Password reset successful",
@@ -227,11 +215,12 @@ class UserController {
     }
   }
 
-  // Update user role
-  async updateRole(req: Request, res: Response) {
+  /**
+   * Update user role
+   */
+  async updateRole(req: Request, res: Response): Promise<Response> {
     try {
       const { userId, newRole } = req.body;
-
       if (!Object.values(UserRoles).includes(newRole)) {
         return Utility.handleError(
           res,
@@ -239,7 +228,6 @@ class UserController {
           ResponseCode.BAD_REQUEST,
         );
       }
-
       const user = await this.userService.getUserByField({ userId });
       if (!user) {
         return Utility.handleError(
@@ -250,14 +238,14 @@ class UserController {
       }
 
       await this.userService.updateRecord({ userId }, { role: newRole });
-      Utility.handleSuccess(
+      return Utility.handleSuccess(
         res,
         "User role updated successfully",
         { userId, newRole },
         ResponseCode.SUCCESS,
       );
     } catch (error) {
-      Utility.handleError(
+      return Utility.handleError(
         res,
         "An error occurred during role update.",
         ResponseCode.SERVER_ERROR,

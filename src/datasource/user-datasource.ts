@@ -1,3 +1,7 @@
+/**
+ * User Data Source
+ * Handles user data operations with the database
+ */
 import { Op } from "sequelize";
 import {
   IFindUserQuery,
@@ -8,18 +12,30 @@ import {
 import UserModel from "../model/user-model";
 
 class UserDataSource implements IUserDataSource {
+  /**
+   * Create a new user record
+   */
   async create(record: IUserCreationBody): Promise<IUser> {
-    return await UserModel.create(record);
+    return UserModel.create(record);
   }
 
+  /**
+   * Fetch a single user record based on search criteria
+   */
   async fetchOne(query: IFindUserQuery): Promise<IUser | null> {
-    return await UserModel.findOne(query);
+    return UserModel.findOne(query);
   }
 
+  /**
+   * Fetch all user records based on search criteria
+   */
   async fetchAll(query: IFindUserQuery): Promise<IUser[] | null> {
-    return await UserModel.findAll(query);
+    return UserModel.findAll(query);
   }
 
+  /**
+   * Update a single user record based on search criteria
+   */
   async updateOne(
     searchBy: IFindUserQuery,
     data: Partial<IUser>,
