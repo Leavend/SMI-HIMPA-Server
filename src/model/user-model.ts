@@ -53,7 +53,6 @@ const UserModel = Db.define<IUserModel>(
   {
     tableName: "Users",
     timestamps: true,
-    underscored: true,
     paranoid: false,
   },
 );

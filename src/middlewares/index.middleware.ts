@@ -29,7 +29,7 @@ export const validator = (schema: Schema<any>) => {
       next();
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "Validation failed";
+        error instanceof Error ? error.message : "Validasi gagal";
       Utility.handleError(res, errorMessage, ResponseCode.BAD_REQUEST);
     }
   };
@@ -49,25 +49,25 @@ const authenticateToken = async (
   let token: string = req.headers.authorization ?? "";
 
   if (Utility.isEmpty(token)) {
-    throw new Error("Authorization header is required");
+    throw new Error("Header otorisasi wajib diisi");
   }
 
   token = token.split(" ")[1];
 
   if (!token) {
-    throw new Error("Invalid token format");
+    throw new Error("Format token tidak valid");
   }
 
   const decode = jwt.verify(token, process.env.JWT_KEY as string) as IUser;
 
   if (!decode || !decode.userId) {
-    throw new Error("Invalid token");
+    throw new Error("Token tidak valid");
   }
 
   const user = await userService.getUserByField({ userId: decode.userId });
 
   if (!user) {
-    throw new Error("User not found");
+    throw new Error("Pengguna tidak ditemukan");
   }
 
   return user;
@@ -91,7 +91,7 @@ export const Auth = () => {
       }
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "Authentication failed";
+        error instanceof Error ? error.message : "Autentikasi gagal";
       Utility.handleError(res, errorMessage, ResponseCode.BAD_REQUEST);
     }
   };
@@ -114,11 +114,11 @@ export const AdminAuth = () => {
         req.body.user = user;
         next();
       } else {
-        throw new Error("Admin access required");
+        throw new Error("Akses admin diperlukan");
       }
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "Authentication failed";
+        error instanceof Error ? error.message : "Autentikasi gagal";
       Utility.handleError(res, errorMessage, ResponseCode.BAD_REQUEST);
     }
   };

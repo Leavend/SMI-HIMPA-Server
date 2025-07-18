@@ -83,8 +83,9 @@ class UserService {
       const query = { where: { ...searchBy } } as IFindUserQuery;
       await this.userDataSource.updateOne(query, record);
     } catch (error) {
-      console.error("Error updating user record:", error);
-      throw error;
+      const errorMessage =
+        error instanceof Error ? error.message : "Kesalahan tidak diketahui";
+      throw new Error(`Kesalahan saat memperbarui catatan pengguna: ${errorMessage}`);
     }
   }
 
@@ -126,8 +127,9 @@ class UserService {
       };
       await this.userDataSource.deleteOne(query);
     } catch (error) {
-      console.error("Error deleting user:", error);
-      throw error;
+      const errorMessage =
+        error instanceof Error ? error.message : "Kesalahan tidak diketahui";
+      throw new Error(`Kesalahan saat menghapus catatan pengguna: ${errorMessage}`);
     }
   }
 }

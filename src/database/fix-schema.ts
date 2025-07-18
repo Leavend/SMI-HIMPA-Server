@@ -26,7 +26,39 @@ const fixDatabaseSchema = async (): Promise<void> => {
 
     if (!hasUserId && hasUserIdUnderscored) {
       logger.info("Fixing Users table: renaming user_id to userId");
+      
+      // First, drop foreign key constraints that reference user_id
+      try {
+        await Db.query("ALTER TABLE Borrows DROP FOREIGN KEY Borrows_ibfk_1");
+        logger.info("Dropped foreign key constraint Borrows_ibfk_1");
+      } catch (error) {
+        logger.warn("Could not drop foreign key constraint (might not exist):", error);
+      }
+      
+      try {
+        await Db.query("ALTER TABLE Returns DROP FOREIGN KEY Returns_ibfk_1");
+        logger.info("Dropped foreign key constraint Returns_ibfk_1");
+      } catch (error) {
+        logger.warn("Could not drop foreign key constraint (might not exist):", error);
+      }
+      
+      // Now rename the column
       await Db.query("ALTER TABLE Users CHANGE user_id userId VARCHAR(255)");
+      
+      // Re-add foreign key constraints with new column name
+      try {
+        await Db.query("ALTER TABLE Borrows ADD CONSTRAINT Borrows_ibfk_1 FOREIGN KEY (userId) REFERENCES Users(userId)");
+        logger.info("Re-added foreign key constraint for Borrows table");
+      } catch (error) {
+        logger.warn("Could not re-add foreign key constraint for Borrows:", error);
+      }
+      
+      try {
+        await Db.query("ALTER TABLE Returns ADD CONSTRAINT Returns_ibfk_1 FOREIGN KEY (userId) REFERENCES Users(userId)");
+        logger.info("Re-added foreign key constraint for Returns table");
+      } catch (error) {
+        logger.warn("Could not re-add foreign key constraint for Returns:", error);
+      }
     }
 
     // Check other columns that might need renaming

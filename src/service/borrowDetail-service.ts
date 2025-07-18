@@ -67,8 +67,9 @@ class BorrowDetailService {
       const query = { where: { ...searchBy } } as IFindBorrowDetailQuery;
       await this.borrowDetailDataSource.updateOne(query, record);
     } catch (error) {
-      console.error("Error updating borrow detail record:", error);
-      throw error;
+      const errorMessage =
+        error instanceof Error ? error.message : "Kesalahan tidak diketahui";
+      throw new Error(`Kesalahan saat memperbarui detail peminjaman: ${errorMessage}`);
     }
   }
 
@@ -78,8 +79,9 @@ class BorrowDetailService {
       const query = { where: { ...record } } as IFindBorrowDetailQuery;
       await this.borrowDetailDataSource.deleteOne(query);
     } catch (error) {
-      console.error("Error deleting borrow detail:", error);
-      throw error;
+      const errorMessage =
+        error instanceof Error ? error.message : "Kesalahan tidak diketahui";
+      throw new Error(`Kesalahan saat menghapus detail peminjaman: ${errorMessage}`);
     }
   }
 }

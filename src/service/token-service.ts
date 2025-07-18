@@ -41,7 +41,7 @@ class TokenService {
       const query = { where: { ...record }, raw: true } as IFindTokenQuery;
       return await this.tokenDataSource.fetchOne(query);
     } catch (error) {
-      console.error("Error fetching token by field:", error);
+      console.error("Terjadi kesalahan saat mengambil token berdasarkan field:", error);
       throw error;
     }
   }
@@ -81,7 +81,7 @@ class TokenService {
     try {
       return await this.tokenDataSource.create(tokenData);
     } catch (error) {
-      console.error("Error creating token:", error);
+      console.error("Terjadi kesalahan saat membuat token:", error);
       throw error;
     }
   }
@@ -100,7 +100,7 @@ class TokenService {
       const query = { where: { ...searchBy }, raw: true } as IFindTokenQuery;
       await this.tokenDataSource.updateOne(record, query);
     } catch (error) {
-      console.error("Error updating token record:", error);
+      console.error("Terjadi kesalahan saat memperbarui catatan token:", error);
       throw error;
     }
   }

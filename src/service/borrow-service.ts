@@ -159,8 +159,8 @@ class BorrowService {
       await this.borrowDataSource.updateOne(query, record);
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
-      throw new Error(`Error updating borrow record: ${errorMessage}`);
+        error instanceof Error ? error.message : "Kesalahan tidak diketahui";
+      throw new Error(`Kesalahan saat memperbarui catatan peminjaman: ${errorMessage}`);
     }
   }
 
@@ -203,8 +203,8 @@ class BorrowService {
       await this.borrowDataSource.deleteOne(query);
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
-      throw new Error(`Error deleting borrow record: ${errorMessage}`);
+        error instanceof Error ? error.message : "Kesalahan tidak diketahui";
+      throw new Error(`Kesalahan saat menghapus catatan peminjaman: ${errorMessage}`);
     }
   }
 }

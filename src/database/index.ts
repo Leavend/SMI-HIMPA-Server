@@ -39,7 +39,6 @@ const sequelize = new Sequelize(database, username, password, {
   },
   define: {
     timestamps: true,
-    underscored: true,
   },
 });
 

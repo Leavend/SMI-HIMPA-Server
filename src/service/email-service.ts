@@ -76,8 +76,8 @@ class EmailService {
     to: string,
     code: string,
   ): Promise<void> {
-    const subject = "Forgot Password";
-    const message = `Your reset password code is <b>${code}</b>`;
+    const subject = "Lupa Password";
+    const message = `Kode reset password Anda adalah <b>${code}</b>`;
     await this.sendMail(user, to, subject, message);
   }
 
@@ -121,8 +121,8 @@ class EmailService {
       !process.env.APPNAME ||
       !process.env.SUPPORTMAIL
     ) {
-      console.warn("Email configuration incomplete. Skipping email send.");
-      console.log(`Password reset code for ${to}: ${message}`);
+      console.warn("Konfigurasi email tidak lengkap. Mengabaikan pengiriman email.");
+      console.log(`Kode reset password untuk ${to}: ${message}`);
       return; // Exit gracefully without throwing error
     }
 
@@ -146,10 +146,10 @@ class EmailService {
       };
 
       const infoMail = await this.transport.sendMail(mailOptions);
-      console.log(`Email sent successfully: ${infoMail.messageId}`);
+      console.log(`Email berhasil dikirim: ${infoMail.messageId}`);
     } catch (error) {
-      console.error("Error sending email:", error);
-      console.log(`Password reset code for ${to}: ${message}`);
+      console.error("Terjadi kesalahan saat mengirim email:", error);
+      console.log(`Kode reset password untuk ${to}: ${message}`);
       // Don't throw error, just log the code
     }
   }

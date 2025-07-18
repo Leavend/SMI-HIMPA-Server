@@ -158,8 +158,9 @@ class ReturnService {
       };
       await this.returnDataSource.updateOne(query, record);
     } catch (error) {
-      console.error("Error updating return record:", error);
-      throw error;
+      const errorMessage =
+        error instanceof Error ? error.message : "Kesalahan tidak diketahui";
+      throw new Error(`Kesalahan saat memperbarui catatan pengembalian: ${errorMessage}`);
     }
   }
 
@@ -175,8 +176,9 @@ class ReturnService {
       };
       await this.returnDataSource.deleteOne(query);
     } catch (error) {
-      console.error("Error deleting return:", error);
-      throw error;
+      const errorMessage =
+        error instanceof Error ? error.message : "Kesalahan tidak diketahui";
+      throw new Error(`Kesalahan saat menghapus catatan pengembalian: ${errorMessage}`);
     }
   }
 

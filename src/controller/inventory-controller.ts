@@ -25,7 +25,7 @@ class InventoryController {
       if (inventoryExists) {
         return Utility.handleError(
           res,
-          "Inventory item with this code already exists",
+          "Barang dengan kode ini sudah terdaftar",
           ResponseCode.ALREADY_EXIST,
         );
       }
@@ -33,14 +33,14 @@ class InventoryController {
         await this.inventoryService.createInventory(newInventory);
       return Utility.handleSuccess(
         res,
-        "Inventory item created successfully",
+        "Barang berhasil ditambahkan",
         { inventory },
         ResponseCode.SUCCESS,
       );
     } catch (error) {
       return Utility.handleError(
         res,
-        error instanceof Error ? error.message : "Internal server error",
+        error instanceof Error ? error.message : "Kesalahan server internal",
         ResponseCode.SERVER_ERROR,
       );
     }
@@ -54,14 +54,14 @@ class InventoryController {
       const inventories = await this.inventoryService.getAllInventories();
       return Utility.handleSuccess(
         res,
-        "Inventories fetched successfully",
+        "Data inventaris berhasil diambil",
         { inventories },
         ResponseCode.SUCCESS,
       );
     } catch (error) {
       return Utility.handleError(
         res,
-        error instanceof Error ? error.message : "Internal server error",
+        error instanceof Error ? error.message : "Kesalahan server internal",
         ResponseCode.SERVER_ERROR,
       );
     }
@@ -79,14 +79,14 @@ class InventoryController {
       if (!inventoryExists) {
         return Utility.handleError(
           res,
-          "Inventory item not found",
+          "Barang tidak ditemukan",
           ResponseCode.NOT_FOUND,
         );
       }
       if (!req.body || !Object.keys(req.body).length) {
         return Utility.handleError(
           res,
-          "Request body is empty or invalid",
+          "Data permintaan kosong atau tidak valid",
           ResponseCode.BAD_REQUEST,
         );
       }
@@ -103,7 +103,7 @@ class InventoryController {
         if (requestedCondition === "Out of Stock" && newQuantity !== 0) {
           return Utility.handleError(
             res,
-            "Cannot set Out of Stock status when quantity is not zero",
+            "Tidak dapat mengatur status Habis jika jumlah tidak nol",
             ResponseCode.BAD_REQUEST,
           );
         }
@@ -126,7 +126,7 @@ class InventoryController {
       ) {
         return Utility.handleError(
           res,
-          "System detected invalid Out of Stock status. Quantity must be zero.",
+          "Sistem mendeteksi status Habis tidak valid. Jumlah harus nol.",
           ResponseCode.BAD_REQUEST,
         );
       }
@@ -136,14 +136,14 @@ class InventoryController {
       );
       return Utility.handleSuccess(
         res,
-        "Inventory item updated successfully",
+        "Barang berhasil diperbarui",
         { inventoryModify },
         ResponseCode.SUCCESS,
       );
     } catch (error) {
       return Utility.handleError(
         res,
-        "An unexpected error occurred",
+        "Terjadi kesalahan yang tidak terduga",
         ResponseCode.SERVER_ERROR,
       );
     }
@@ -160,7 +160,7 @@ class InventoryController {
       if (!inventoryExists) {
         return Utility.handleError(
           res,
-          "Inventory item not found",
+          "Barang tidak ditemukan",
           ResponseCode.NOT_FOUND,
         );
       }
@@ -176,15 +176,15 @@ class InventoryController {
       );
 
       const message = cascade
-        ? "Inventory item and related borrow details deleted successfully"
-        : "Inventory item deleted successfully";
+        ? "Barang dan detail peminjaman terkait berhasil dihapus"
+        : "Barang berhasil dihapus";
 
       return Utility.handleSuccess(res, message, {}, ResponseCode.SUCCESS);
     } catch (error) {
       // Handle foreign key constraint error specifically
       if (
         error instanceof Error &&
-        error.message.includes("Cannot delete inventory because it has")
+        error.message.includes("Tidak dapat menghapus barang karena masih memiliki")
       ) {
         return Utility.handleError(
           res,
@@ -195,7 +195,7 @@ class InventoryController {
 
       return Utility.handleError(
         res,
-        error instanceof Error ? error.message : "Internal server error",
+        error instanceof Error ? error.message : "Kesalahan server internal",
         ResponseCode.SERVER_ERROR,
       );
     }

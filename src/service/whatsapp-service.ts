@@ -84,9 +84,9 @@ class WhatsAppService {
       const chatId = Utility.formatPhoneNumberToWhatsApp(to);
 
       await client.sendMessage(chatId, { text: textMessage });
-      console.log(`Message sent to ${to}`);
+      console.log(`Pesan berhasil dikirim ke ${to}`);
     } catch (error) {
-      console.error("Error sending WhatsApp message:", error);
+      console.error("Terjadi kesalahan saat mengirim pesan WhatsApp:", error);
       throw error;
     }
   }
@@ -109,10 +109,10 @@ class WhatsAppService {
   ): Promise<void> {
     const placeholders = {
       ...this.getCommonPlaceholders(user, to),
-      SUBJECT: "Borrow Confirmation",
+      SUBJECT: "Konfirmasi Peminjaman",
       MESSAGE:
-        "You have successfully borrowed an item from our warehouse. Please wait for admin confirmation.",
-      ITEM: itemName || "item",
+        "Anda berhasil melakukan peminjaman barang dari gudang kami. Silakan tunggu konfirmasi dari admin.",
+      ITEM: itemName || "barang",
       DATE: this.formatDate(dateBorrow),
       DUE: this.formatDate(dueDate),
     };
@@ -143,7 +143,7 @@ class WhatsAppService {
   ): Promise<void> {
     const placeholders = {
       ...this.getCommonPlaceholders(user, to),
-      ITEM: itemName || "item",
+      ITEM: itemName || "barang",
       DATE: this.formatDate(dateBorrow),
       DUE: this.formatDate(dueDate),
       STATUS: status.toUpperCase(),
@@ -152,9 +152,9 @@ class WhatsAppService {
     let message = "";
 
     if (status === "ACTIVE") {
-      message = `Your borrowing request for the item *${itemName}* has been *approved* by the admin. Please return it by the due date: ${placeholders.DUE}.`;
+      message = `Permintaan peminjaman Anda untuk barang *${itemName}* telah *disetujui* oleh admin. Silakan kembalikan sebelum tanggal jatuh tempo: ${placeholders.DUE}.`;
     } else if (status === "REJECTED") {
-      message = `We regret to inform you that your borrowing request for the item *${itemName}* has been *rejected* by the admin.`;
+      message = `Mohon maaf, permintaan peminjaman Anda untuk barang *${itemName}* telah *ditolak* oleh admin.`;
     }
 
     const htmlMessage = this.replacePlaceholders(message, placeholders);
@@ -183,9 +183,9 @@ class WhatsAppService {
   ): Promise<void> {
     const placeholders = {
       ...this.getCommonPlaceholders(admin, to),
-      SUBJECT: "Borrow Confirmation",
-      MESSAGE: `You have an incoming borrow request from *${user.username}*. Please confirm the request.`,
-      ITEM: itemName || "item",
+      SUBJECT: "Konfirmasi Peminjaman",
+      MESSAGE: `Anda memiliki permintaan peminjaman dari *${user.username}*. Silakan konfirmasi permintaan tersebut.`,
+      ITEM: itemName || "barang",
       DATE: this.formatDate(dateBorrow),
       DUE: this.formatDate(dueDate),
     };

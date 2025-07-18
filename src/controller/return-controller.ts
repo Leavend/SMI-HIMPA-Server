@@ -25,20 +25,20 @@ class ReturnController {
       if (!returns || returns.length === 0) {
         return Utility.handleError(
           res,
-          "No returns records found",
+          "Tidak ada catatan pengembalian ditemukan",
           ResponseCode.NOT_FOUND,
         );
       }
       return Utility.handleSuccess(
         res,
-        "Return records fetched successfully",
+        "Catatan pengembalian berhasil diambil",
         { returns },
         ResponseCode.SUCCESS,
       );
     } catch (error) {
       return Utility.handleError(
         res,
-        error instanceof Error ? error.message : "Internal server error",
+        error instanceof Error ? error.message : "Kesalahan server internal",
         ResponseCode.SERVER_ERROR,
       );
     }
@@ -54,7 +54,7 @@ class ReturnController {
       if (!user) {
         return Utility.handleError(
           res,
-          "User not found",
+          "Pengguna tidak ditemukan",
           ResponseCode.NOT_FOUND,
         );
       }
@@ -62,7 +62,7 @@ class ReturnController {
       if (!returnRecords || returnRecords.length === 0) {
         return Utility.handleError(
           res,
-          "No return records found for this user",
+          "Tidak ada catatan pengembalian untuk pengguna ini",
           ResponseCode.NOT_FOUND,
         );
       }
@@ -111,14 +111,14 @@ class ReturnController {
       });
       return Utility.handleSuccess(
         res,
-        "Return records fetched successfully",
+        "Catatan pengembalian berhasil diambil",
         { returns: formattedReturns },
         ResponseCode.SUCCESS,
       );
     } catch (error) {
       return Utility.handleError(
         res,
-        error instanceof Error ? error.message : "Internal server error",
+        error instanceof Error ? error.message : "Kesalahan server internal",
         ResponseCode.SERVER_ERROR,
       );
     }
@@ -137,7 +137,7 @@ class ReturnController {
       if (!returnExists) {
         return Utility.handleError(
           res,
-          "Return record not found",
+          "Catatan pengembalian tidak ditemukan",
           ResponseCode.NOT_FOUND,
         );
       }
@@ -145,14 +145,14 @@ class ReturnController {
       await this.returnService.updateReturnRecord({ returnId }, updateData);
       return Utility.handleSuccess(
         res,
-        "Return record updated successfully",
+        "Catatan pengembalian berhasil diperbarui",
         {},
         ResponseCode.SUCCESS,
       );
     } catch (error) {
       return Utility.handleError(
         res,
-        error instanceof Error ? error.message : "Internal server error",
+        error instanceof Error ? error.message : "Kesalahan server internal",
         ResponseCode.SERVER_ERROR,
       );
     }
@@ -170,21 +170,21 @@ class ReturnController {
       if (!returnExists) {
         return Utility.handleError(
           res,
-          "Return record not found",
+          "Catatan pengembalian tidak ditemukan",
           ResponseCode.NOT_FOUND,
         );
       }
       await this.returnService.deleteReturn({ returnId });
       return Utility.handleSuccess(
         res,
-        "Return record deleted successfully",
+        "Catatan pengembalian berhasil dihapus",
         {},
         ResponseCode.SUCCESS,
       );
     } catch (error) {
       return Utility.handleError(
         res,
-        error instanceof Error ? error.message : "Internal server error",
+        error instanceof Error ? error.message : "Kesalahan server internal",
         ResponseCode.SERVER_ERROR,
       );
     }

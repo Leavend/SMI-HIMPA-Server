@@ -34,7 +34,7 @@ class UserController {
       if (existingEmail) {
         return Utility.handleError(
           res,
-          "Email already exists",
+          "Email sudah terdaftar",
           ResponseCode.ALREADY_EXIST,
         );
       }
@@ -44,7 +44,7 @@ class UserController {
       if (existingUsername) {
         return Utility.handleError(
           res,
-          "Username already exists",
+          "Username sudah terdaftar",
           ResponseCode.ALREADY_EXIST,
         );
       }
@@ -54,7 +54,7 @@ class UserController {
       if (existingNumber) {
         return Utility.handleError(
           res,
-          "Number already exists",
+          "Nomor sudah terdaftar",
           ResponseCode.ALREADY_EXIST,
         );
       }
@@ -71,19 +71,19 @@ class UserController {
       await WhatsAppService.sendMessage(
         user,
         formattedNumber,
-        "Account Registration",
-        "📢 Your account has been successfully created!",
+        "Akun Registrasi",
+        "📢 Akun Anda telah berhasil dibuat!",
       );
       return Utility.handleSuccess(
         res,
-        "User registered successfully",
+        "Registrasi pengguna berhasil",
         { user },
         ResponseCode.SUCCESS,
       );
     } catch (error) {
       return Utility.handleError(
         res,
-        "An error occurred during registration.",
+        "Terjadi kesalahan saat registrasi.",
         ResponseCode.SERVER_ERROR,
       );
     }
@@ -134,7 +134,7 @@ class UserController {
       if (!user) {
         return Utility.handleError(
           res,
-          "Account does not exist",
+          "Akun tidak ditemukan",
           ResponseCode.NOT_FOUND,
         );
       }
@@ -144,14 +144,14 @@ class UserController {
       await EmailService.sendForgotPasswordMail(user, email, token.code);
       return Utility.handleSuccess(
         res,
-        "Password reset code has been sent to your email",
+        "Kode reset password telah dikirim ke email Anda",
         {},
         ResponseCode.SUCCESS,
       );
     } catch (error) {
       return Utility.handleError(
         res,
-        "An error occurred during password recovery.",
+        "Terjadi kesalahan saat pemulihan password.",
         ResponseCode.SERVER_ERROR,
       );
     }
@@ -355,7 +355,7 @@ class UserController {
       if (!userId) {
         return Utility.handleError(
           res,
-          "User ID is required",
+          "User ID wajib diisi",
           ResponseCode.BAD_REQUEST,
         );
       }
@@ -368,7 +368,7 @@ class UserController {
       if (!userExists) {
         return Utility.handleError(
           res,
-          "User not found",
+          "Pengguna tidak ditemukan",
           ResponseCode.NOT_FOUND,
         );
       }
@@ -382,15 +382,15 @@ class UserController {
       );
 
       const message = cascade
-        ? "User and related borrow records deleted successfully"
-        : "User deleted successfully";
+        ? "Pengguna dan data peminjaman terkait berhasil dihapus"
+        : "Pengguna berhasil dihapus";
 
       return Utility.handleSuccess(res, message, {}, ResponseCode.SUCCESS);
     } catch (error) {
       // Handle foreign key constraint error specifically
       if (
         error instanceof Error &&
-        error.message.includes("Cannot delete user because they have")
+        error.message.includes("Tidak dapat menghapus pengguna karena masih memiliki")
       ) {
         return Utility.handleError(
           res,
@@ -400,7 +400,7 @@ class UserController {
       }
 
       const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
+        error instanceof Error ? error.message : "Kesalahan tidak diketahui";
       return Utility.handleError(res, errorMessage, ResponseCode.SERVER_ERROR);
     }
   }

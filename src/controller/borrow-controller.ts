@@ -62,6 +62,25 @@ class BorrowController {
     try {
       const params: CreateBorrowParams = { ...req.body };
 
+      // Validate borrow period (max 2 weeks, min 1 day)
+      const dateBorrow = new Date(params.dateBorrow);
+      const dateReturn = new Date(params.dateReturn);
+      const diffDays = Math.ceil((dateReturn.getTime() - dateBorrow.getTime()) / (1000 * 60 * 60 * 24));
+      if (diffDays <= 0) {
+        return Utility.handleError(
+          res,
+          "Tanggal pengembalian harus setelah tanggal peminjaman.",
+          ResponseCode.BAD_REQUEST,
+        );
+      }
+      if (diffDays > 14) {
+        return Utility.handleError(
+          res,
+          "Maksimal waktu peminjaman adalah 2 minggu (14 hari).",
+          ResponseCode.BAD_REQUEST,
+        );
+      }
+
       // Validate inventory
       const item = await this.inventoryService.getInventoryByField({
         inventoryId: params.inventoryId,
@@ -70,7 +89,7 @@ class BorrowController {
       if (!item || item.quantity < params.quantity) {
         return Utility.handleError(
           res,
-          "Item not found or insufficient quantity.",
+          "Item tidak ditemukan atau jumlah tidak mencukupi.",
           ResponseCode.BAD_REQUEST,
         );
       }
@@ -78,7 +97,7 @@ class BorrowController {
       if (item.condition !== InventoryStatus.AVAILABLE) {
         return Utility.handleError(
           res,
-          "Item is not available for borrowing.",
+          "Item tidak tersedia untuk dipinjam.",
           ResponseCode.BAD_REQUEST,
         );
       }
@@ -90,7 +109,7 @@ class BorrowController {
       ]);
 
       if (!user?.number || !admin?.number) {
-        throw new Error("User or admin contact is missing.");
+        throw new Error("Kontak pengguna atau admin tidak ditemukan.");
       }
 
       // Calculate new quantity
@@ -151,14 +170,14 @@ class BorrowController {
 
       return Utility.handleSuccess(
         res,
-        "Borrow created successfully",
+        "Peminjaman berhasil dibuat",
         { borrowId: borrow.borrowId, detailBorrow },
         ResponseCode.SUCCESS,
       );
     } catch (error) {
       await transaction.rollback();
       const errorMessage =
-        error instanceof Error ? error.message : "Failed to create borrow";
+        error instanceof Error ? error.message : "Gagal membuat peminjaman";
       return Utility.handleError(res, errorMessage, ResponseCode.SERVER_ERROR);
     }
   }
@@ -185,7 +204,7 @@ class BorrowController {
         params.dateReturn,
       );
     } catch (error) {
-      console.error("Failed to send WA to user:", error);
+      console.error("Gagal mengirim WA ke pengguna:", error);
     }
 
     try {
@@ -198,7 +217,7 @@ class BorrowController {
         params.dateReturn,
       );
     } catch (error) {
-      console.error("Failed to send WA to admin:", error);
+      console.error("Gagal mengirim WA ke admin:", error);
     }
   }
 
@@ -214,20 +233,20 @@ class BorrowController {
       if (!borrows?.length) {
         return Utility.handleError(
           res,
-          "No borrow records found",
+          "Tidak ada catatan peminjaman ditemukan",
           ResponseCode.NOT_FOUND,
         );
       }
 
       return Utility.handleSuccess(
         res,
-        "Success",
+        "Berhasil",
         { borrows },
         ResponseCode.SUCCESS,
       );
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
+        error instanceof Error ? error.message : "Kesalahan tidak diketahui";
       return Utility.handleError(res, errorMessage, ResponseCode.SERVER_ERROR);
     }
   }
@@ -245,7 +264,7 @@ class BorrowController {
       if (!user) {
         return Utility.handleError(
           res,
-          "User not found",
+          "Pengguna tidak ditemukan",
           ResponseCode.NOT_FOUND,
         );
       }
@@ -257,20 +276,20 @@ class BorrowController {
       if (!borrowRecords?.length) {
         return Utility.handleError(
           res,
-          "No borrow records for this user",
+          "Tidak ada catatan peminjaman untuk pengguna ini",
           ResponseCode.NOT_FOUND,
         );
       }
 
       return Utility.handleSuccess(
         res,
-        "Success",
+        "Berhasil",
         { borrowRecords },
         ResponseCode.SUCCESS,
       );
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
+        error instanceof Error ? error.message : "Kesalahan tidak diketahui";
       return Utility.handleError(res, errorMessage, ResponseCode.SERVER_ERROR);
     }
   }
@@ -292,7 +311,7 @@ class BorrowController {
       if (!borrow || !borrowDetail) {
         return Utility.handleError(
           res,
-          "Borrow record not found",
+          "Catatan peminjaman tidak ditemukan",
           ResponseCode.NOT_FOUND,
         );
       }
@@ -305,13 +324,13 @@ class BorrowController {
 
       return Utility.handleSuccess(
         res,
-        "Borrow updated successfully",
+        "Catatan peminjaman berhasil diperbarui",
         { borrowId },
         ResponseCode.SUCCESS,
       );
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
+        error instanceof Error ? error.message : "Kesalahan tidak diketahui";
       return Utility.handleError(res, errorMessage, ResponseCode.SERVER_ERROR);
     }
   }
@@ -328,7 +347,7 @@ class BorrowController {
       if (!borrowId) {
         return Utility.handleError(
           res,
-          "Borrow ID is required",
+          "ID peminjaman diperlukan",
           ResponseCode.BAD_REQUEST,
         );
       }
@@ -341,7 +360,7 @@ class BorrowController {
       if (!borrowExists) {
         return Utility.handleError(
           res,
-          "Borrow record not found",
+          "Catatan peminjaman tidak ditemukan",
           ResponseCode.NOT_FOUND,
         );
       }
@@ -355,8 +374,8 @@ class BorrowController {
       );
 
       const message = cascade
-        ? "Borrow record and related borrow details deleted successfully"
-        : "Borrow record deleted successfully";
+        ? "Catatan peminjaman dan detail peminjaman terkait berhasil dihapus"
+        : "Catatan peminjaman berhasil dihapus";
 
       return Utility.handleSuccess(res, message, {}, ResponseCode.SUCCESS);
     } catch (error) {
@@ -373,7 +392,7 @@ class BorrowController {
       }
 
       const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
+        error instanceof Error ? error.message : "Kesalahan tidak diketahui";
       return Utility.handleError(res, errorMessage, ResponseCode.SERVER_ERROR);
     }
   }
@@ -391,7 +410,7 @@ class BorrowController {
       if (!borrowId || !status) {
         return Utility.handleError(
           res,
-          "borrowId and status are required",
+          "borrowId dan status diperlukan",
           ResponseCode.BAD_REQUEST,
         );
       }
@@ -403,7 +422,7 @@ class BorrowController {
       if (!allowedStatuses.includes(normalizedStatus)) {
         return Utility.handleError(
           res,
-          `Invalid status. Allowed values: ${allowedStatuses.join(", ")}`,
+          `Status tidak valid. Nilai yang diizinkan: ${allowedStatuses.join(", ")}`,
           ResponseCode.BAD_REQUEST,
         );
       }
@@ -417,7 +436,7 @@ class BorrowController {
       if (!borrow || !borrowDetails?.length) {
         return Utility.handleError(
           res,
-          "Borrow not found",
+          "Peminjaman tidak ditemukan",
           ResponseCode.NOT_FOUND,
         );
       }
@@ -440,7 +459,7 @@ class BorrowController {
       const updatedRecord =
         await this.borrowDetailService.getBorrowDetailsByField({ borrowId });
       if (!updatedRecord || updatedRecord[0].status !== normalizedStatus) {
-        throw new Error("Failed to verify status update");
+        throw new Error("Gagal memverifikasi pembaruan status");
       }
 
       // Send notification
@@ -452,7 +471,7 @@ class BorrowController {
 
       return Utility.handleSuccess(
         res,
-        `Borrow status updated to ${normalizedStatus}`,
+        `Status peminjaman diperbarui menjadi ${normalizedStatus}`,
         {
           borrowId,
           status: normalizedStatus,
@@ -464,7 +483,7 @@ class BorrowController {
       );
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "Internal server error";
+        error instanceof Error ? error.message : "Kesalahan server internal";
       return Utility.handleError(res, errorMessage, ResponseCode.SERVER_ERROR);
     }
   }
@@ -502,7 +521,7 @@ class BorrowController {
         );
       }
     } catch (error) {
-      console.error("WhatsApp approval notification failed:", error);
+      console.error("Notifikasi persetujuan WhatsApp gagal:", error);
     }
   }
 }

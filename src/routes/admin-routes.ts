@@ -110,6 +110,23 @@ const createAdminRoute = () => {
     asyncHandler(returnController.deleteReturn.bind(returnController)),
   );
 
+  // WhatsApp Status Route
+  router.get('/whatsapp/status', async (req: Request, res: Response) => {
+    try {
+      // Removed: const status = await getWhatsAppStatus();
+      res.json({
+        success: true,
+        data: "WhatsApp status endpoint removed"
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Failed to get WhatsApp status',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   return router;
 };
 

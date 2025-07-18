@@ -121,8 +121,9 @@ class InventoryService {
       };
       await this.inventoryDataSource.updateOne(query, record);
     } catch (error) {
-      console.error("Error updating inventory record:", error);
-      throw error;
+      const errorMessage =
+        error instanceof Error ? error.message : "Kesalahan tidak diketahui";
+      throw new Error(`Kesalahan saat memperbarui catatan inventaris: ${errorMessage}`);
     }
   }
 
@@ -175,8 +176,9 @@ class InventoryService {
       };
       await this.inventoryDataSource.deleteOne(query);
     } catch (error) {
-      console.error("Error deleting inventory:", error);
-      throw error;
+      const errorMessage =
+        error instanceof Error ? error.message : "Kesalahan tidak diketahui";
+      throw new Error(`Kesalahan saat menghapus catatan inventaris: ${errorMessage}`);
     }
   }
 }
