@@ -1,6 +1,6 @@
 # .github/workflows/deploy.yml
 
-name: Deploy to VPS
+name: Build and Deploy to VPS
 
 on:
   push:
@@ -28,11 +28,13 @@ jobs:
         run: npm run build
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v3
+        # --- PERUBAHAN DI SINI ---
+        uses: actions/upload-artifact@v4
         with:
           name: app-build
           path: |
             dist
+            node_modules
             package.json
             package-lock.json
 
@@ -42,7 +44,8 @@ jobs:
 
     steps:
       - name: Download build artifact
-        uses: actions/download-artifact@v3
+        # --- DAN PERUBAHAN DI SINI ---
+        uses: actions/download-artifact@v4
         with:
           name: app-build
           path: ./deploy
@@ -55,6 +58,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           source: "./deploy/*"
           target: "/home/yusuf/SMI-HIMPA-Server"
+          strip_components: 1 # Menghapus folder 'deploy' saat menyalin
 
       - name: Install dependencies and restart PM2
         uses: appleboy/ssh-action@master
@@ -64,5 +68,6 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             cd /home/yusuf/SMI-HIMPA-Server
+            # Menjalankan 'npm ci' akan menginstal dari package-lock.json
             npm ci --only=production
             pm2 restart smi-server
