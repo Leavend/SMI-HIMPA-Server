@@ -1,3 +1,4 @@
+import path from 'path';
 import app from './src/app';
 import { APP_CONFIG } from './src/config/app-config';
 import logger from './src/utils/logger';
@@ -48,7 +49,9 @@ async function initializeWhatsAppClient(): Promise<void> {
       whatsappClient = null;
     }
 
-    const { state, saveCreds } = await useMultiFileAuthState('baileys_auth');
+    const permanentSessionPath = path.resolve('baileys_auth');
+    logger.info(`Using permanent session path: ${permanentSessionPath}`);
+    const { state, saveCreds } = await useMultiFileAuthState(permanentSessionPath);
     const { version } = await fetchLatestBaileysVersion();
 
     const sock = makeWASocket({
