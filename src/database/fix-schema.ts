@@ -10,7 +10,6 @@ import logger from "../utils/logger";
  * This script handles cases where tables were created with different naming conventions
  */
 
-// apalah daya
 const fixDatabaseSchema = async (): Promise<void> => {
   try {
     // Check if Users table exists and has the correct column names
