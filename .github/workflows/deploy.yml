@@ -45,4 +45,5 @@ jobs:
           script: |
             cd /home/yusuf/SMI-HIMPA-Server
             npm install --production
+            npm run build
             pm2 restart smi-server
